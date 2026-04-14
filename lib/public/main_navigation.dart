@@ -1,16 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:ska_crm/public/default_page.dart';
-import 'package:ska_crm/sales/sales_navigation.dart';
+import '../sales/sales_navigation.dart';
 import '../admin/admin_navigation.dart';
 import '../teams/teams_navigation.dart';
-import 'login_page.dart';
-import 'package:ska_crm/utils/config.dart';
-import 'package:ska_crm/hr/hr_navigation.dart';
+import '../hr/hr_navigation.dart';
+import 'login_page/login_page.dart';
+import 'services/session.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -23,10 +18,10 @@ class _MainNavigationState extends State<MainNavigation> {
   String? role;
   String? department;
   String? phone;
-
   bool isLoading = true;
   Timer? _sessionTimer;
   bool _isDialogShown = false;
+  final SessionService _sessionService = SessionService();
 
   @override
   void initState() {
@@ -50,18 +45,14 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
+    final user = await _sessionService.getStoredUser();
 
-    role = prefs.getString('role');
-    department = prefs.getString('department');
-    phone = prefs.getString('phone');
-
-    print("ROLE FROM PREFS: $role");
+    role = user['role'];
+    department = user['department'];
+    phone = user['phone'];
 
     if (role == null) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        _goToLogin();
-      });
+      Future.delayed(const Duration(milliseconds: 300), _goToLogin);
       setState(() => isLoading = false);
       return;
     }
@@ -72,7 +63,7 @@ class _MainNavigationState extends State<MainNavigation> {
       _validateSession();
     });
 
-    setState(() => isLoading = false); // ✅ IMPORTANT
+    setState(() => isLoading = false);
   }
 
   void _goToLogin() {
@@ -83,7 +74,6 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   Widget _navigateUser() {
-    print("ROLE: $role");
 
     if (role == 'ADMIN' || role == 'DIRECTOR') {
       return const AdminMainPage();
@@ -94,52 +84,33 @@ class _MainNavigationState extends State<MainNavigation> {
     } else if (role == 'TEAM') {
       return const TeamsMainPage();
     } else {
-      return const DefaultPage();
+      return const LoginPage();
     }
   }
 
   Future<void> _validateSession() async {
-    if (_isDialogShown || phone == null  ) return;
+    if (_isDialogShown || phone == null) return;
 
-    try {
+    final result = await _sessionService.validateUser(phone!);
 
-      final url = Uri.parse('$baseUrl/users/${Uri.encodeComponent(phone!)}');
-      final response =
-      await http.get(url).timeout(const Duration(seconds: 10));
+    if (!mounted) return;
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print("CALLING API WITH PHONE: $phone");
-        print("URL: $url");
-        print("STATUS: ${response.statusCode}");
-        print("BODY: ${response.body}");
-        final isUserActive = data['is_active'] ?? false;
-        final reason = data['userBlockReason'] ?? '';
-
-        if (!isUserActive) {
-          _showInactiveDialog(
-            reason.isNotEmpty ? reason : "Account deactivated",
-          );
-        }
-      }
+    if (!result['success']) {
+      _showMessage(result['message']);
+      return;
     }
 
-    on SocketException {
-      _showMessage("No Internet connection");
-    }
-
-    on TimeoutException {
-      _showMessage("Server timeout");
-    }
-
-    catch (e) {
-      _showMessage("Something went wrong");
+    if (!result['isActive']) {
+      _showInactiveDialog(
+        result['reason'].isNotEmpty
+            ? result['reason']
+            : "Account deactivated",
+      );
     }
   }
 
   Future<void> _showInactiveDialog(String reason) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await _sessionService.clearSession();
 
     if (!mounted) return;
 
@@ -177,6 +148,6 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
       );
     }
-    return _navigateUser(); // ✅ direct rendering
+    return _navigateUser();
   }
 }
