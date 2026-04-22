@@ -16,6 +16,11 @@ class AuthService {
       if (!formattedPhone.startsWith("+91")) {
         formattedPhone = "+91$formattedPhone";
       }
+      print("URL: $uri");
+      print("REQUEST BODY: ${jsonEncode({
+        "phone": formattedPhone,
+        "password": password,
+      })}");
 
       final response = await http.post(
         uri,
@@ -25,8 +30,12 @@ class AuthService {
           "password": password,
         }),
       );
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
-      final data = jsonDecode(response.body);
+      final data = response.body.isNotEmpty
+          ? jsonDecode(response.body)
+          : {};
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {

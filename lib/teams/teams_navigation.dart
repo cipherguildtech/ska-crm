@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'widgets/drawer.dart';
+import 'widgets/appbar.dart';
+import 'widgets/navbar.dart';
 
 class TeamsMainPage extends StatefulWidget {
   const TeamsMainPage({super.key});
@@ -9,45 +12,57 @@ class TeamsMainPage extends StatefulWidget {
 }
 
 class _TeamsMainPageState extends State<TeamsMainPage> {
+  int _selectedIndex = 0;
+  String name = "";
   String role = "";
   String department = "";
+
+  final List<Widget> _pages = [
+    const Center(child: Text("Dashboard")),
+    const Center(child: Text("Projects")),
+    const Center(child: Text("Teams")),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadUser();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadUser() async {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      role = prefs.getString('role') ?? "";
+      name = prefs.getString('name') ?? "User";
+      role = prefs.getString('role') ?? "Role";
       department = prefs.getString('department') ?? "";
     });
   }
 
-  String get title {
-    if (role == 'ADMIN') return "Welcome to Admin Dashboard";
-    if (role == 'HR') return "Welcome to HR Dashboard";
-    if (role == 'SALES') return "Welcome to Sales Dashboard";
-    return "Welcome to Dashboard";
+  void _onItemTapped(int index) {
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal.shade50,
-      body: Center(
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.teal,
-          ),
-          textAlign: TextAlign.center,
-        ),
+      appBar: TeamsAppBar(
+        name: name,
+        role: role,
+        department: department,
+      ),
+
+      drawer: TeamsDrawer(
+        name: name,
+        role: role,
+        department: department,
+      ),
+
+      body: _pages[_selectedIndex],
+
+      bottomNavigationBar: TeamsBottomNav(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
