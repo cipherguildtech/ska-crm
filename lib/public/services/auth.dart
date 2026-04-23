@@ -17,6 +17,7 @@ class AuthService {
         formattedPhone = "+91$formattedPhone";
       }
 
+
       final response = await http.post(
         uri,
         headers: {"Content-Type": "application/json"},
@@ -26,7 +27,9 @@ class AuthService {
         }),
       );
 
-      final data = jsonDecode(response.body);
+      final data = response.body.isNotEmpty
+          ? jsonDecode(response.body)
+          : {};
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {

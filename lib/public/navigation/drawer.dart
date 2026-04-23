@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../change_password/change_password.dart';
 import '../profile/profile.dart';
-import '../../public/login_page/login_page.dart';
+import '../login_page/login_page.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
-class HrDrawer extends StatelessWidget {
+class CustomDrawer extends StatelessWidget {
   final String name;
   final String role;
   final String department;
 
-  const HrDrawer({
+  const CustomDrawer({
     super.key,
     required this.name,
     required this.role,
