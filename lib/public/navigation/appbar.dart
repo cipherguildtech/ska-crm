@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
-class HrAppBar extends StatelessWidget implements PreferredSizeWidget {
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String name;
   final String role;
   final String department;
 
-  const HrAppBar({
+  const CustomAppBar({
     super.key,
     required this.name,
     required this.role,

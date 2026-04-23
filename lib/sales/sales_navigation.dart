@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'widgets/drawer.dart';
-import 'widgets/appbar.dart';
+import '../public/navigation/appbar.dart';
+import '../public/navigation/drawer.dart';
 import 'widgets/navbar.dart';
 
 class SalesMainPage extends StatefulWidget {
@@ -46,13 +46,13 @@ class _SalesMainPageState extends State<SalesMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SalesAppBar(
+      appBar: CustomAppBar(
         name: name,
         role: role,
         department: department,
       ),
 
-      drawer: SalesDrawer(
+      drawer: CustomDrawer(
         name: name,
         role: role,
         department: department,
