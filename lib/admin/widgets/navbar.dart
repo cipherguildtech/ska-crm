@@ -34,7 +34,7 @@ class AdminBottomNav extends StatelessWidget {
           label: "Projects",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
+          icon: Icon(Icons.manage_accounts),
           label: "Manage",
         ),
       ],

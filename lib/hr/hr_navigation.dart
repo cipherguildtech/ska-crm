@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard/dashboard.dart';
 import '../public/navigation/drawer.dart';
 import '../public/navigation/appbar.dart';
+import 'projects/projects.dart';
+import 'teams/teams.dart';
 import 'widgets/navbar.dart';
 
 class HrMainPage extends StatefulWidget {
@@ -20,8 +22,8 @@ class _HrMainPageState extends State<HrMainPage> {
 
   final List<Widget> _pages = [
     const DashboardPage(),
-    const Center(child: Text("Projects")),
-    const Center(child: Text("Teams")),
+    const Projects(),
+    const Teams(),
   ];
 
   @override

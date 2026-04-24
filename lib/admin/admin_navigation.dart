@@ -20,7 +20,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
   final List<Widget> _pages = [
     const Center(child: Text("Dashboard")),
     const Center(child: Text("Projects")),
-    const Center(child: Text("Teams")),
+    const Center(child: Text("Manage")),
   ];
 
   @override

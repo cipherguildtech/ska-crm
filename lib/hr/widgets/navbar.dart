@@ -34,8 +34,8 @@ class HrBottomNav extends StatelessWidget {
           label: "Projects",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: "Manage",
+          icon: Icon(Icons.people_alt_rounded),
+          label: "Teams",
         ),
       ],
     );
