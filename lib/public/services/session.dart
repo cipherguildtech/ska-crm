@@ -24,7 +24,7 @@ class SessionService {
 
   Future<Map<String, dynamic>> validateUser(String phone) async {
     try {
-      final url = Uri.parse('$baseUrl/users/${Uri.encodeComponent(phone)}');
+      final url = Uri.parse('$baseUrl/users/detail/${Uri.encodeComponent(phone)}');
 
       final response =
       await http.get(url).timeout(const Duration(seconds: 10));

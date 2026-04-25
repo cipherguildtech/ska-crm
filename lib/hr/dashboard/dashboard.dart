@@ -143,10 +143,9 @@ class _DashboardPageState extends State<DashboardPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              /// HEADER
               const Text(
                 "Work Status",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal, ),
               ),
 
               const SizedBox(height: 4),
@@ -158,15 +157,26 @@ class _DashboardPageState extends State<DashboardPage> {
 
               const SizedBox(height: 15),
 
-              /// GRID
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 2.2,
+                mainAxisSpacing: 15,
+                childAspectRatio: 2.0,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
+                  StatusCard(
+                    title: "No Task Projects",
+                    count: projectWithoutTask,
+                    color: Colors.brown,
+                    icon: Icons.block,
+                  ),
+                  StatusCard(
+                    title: "Review",
+                    count: review,
+                    color: Colors.purple,
+                    icon: Icons.rate_review,
+                  ),
                   StatusCard(
                     title: "Pending",
                     count: pending,
@@ -196,12 +206,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     count: cancelled,
                     color: Colors.red,
                     icon: Icons.cancel,
-                  ),
-                  StatusCard(
-                    title: "Review",
-                    count: review,
-                    color: Colors.purple,
-                    icon: Icons.rate_review,
                   ),
                   StatusCard(
                     title: "Delayed",
@@ -245,18 +249,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: Colors.black54,
                     icon: Icons.close,
                   ),
-                  StatusCard(
-                    title: "No Task Projects",
-                    count: projectWithoutTask,
-                    color: Colors.brown,
-                    icon: Icons.block,
-                  ),
+
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              /// TASK HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
