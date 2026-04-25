@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ska_crm/sales/pages/dashboard/dashboard.dart';
 import 'package:ska_crm/sales/pages/projects/projects.dart';
-
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
-import 'widgets/navbar.dart';
+import '../public/navigation/navbar.dart';
 
 class SalesMainPage extends StatefulWidget {
   const SalesMainPage({super.key});
@@ -55,7 +54,8 @@ class _SalesMainPageState extends State<SalesMainPage> {
 
       body: _pages[_selectedIndex],
 
-      bottomNavigationBar: SalesBottomNav(
+      bottomNavigationBar: CustomNavBar(
+        role: "SALES",
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),

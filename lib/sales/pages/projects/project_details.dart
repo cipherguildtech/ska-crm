@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ska_crm/sales/pages/projects/quotation.dart';
 import 'package:ska_crm/sales/pages/projects/update_quotation.dart';
-
-import '../../../admin/widgets/navbar.dart';
 import 'cancel_quotation.dart';
 
 class ProjectDashboard extends StatelessWidget {
@@ -105,7 +103,7 @@ class CustomerInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.1),
+        color: Colors.teal.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF00A8A8).withOpacity(0.3)),
       ),
@@ -176,7 +174,7 @@ class ProjectDetailsCard extends StatelessWidget {
                     SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.circle, color: primary, size: 15),
+                        Icon(Icons.circle, color: Colors.teal, size: 15),
                         SizedBox(width: 5),
                         Text(
                           "Structural Engineering",
@@ -240,7 +238,7 @@ class ProjectDetailsCard extends StatelessWidget {
               value: 4 / 9,
               borderRadius: BorderRadius.circular(10),
               minHeight: 6,
-              color: primary,
+              color: Colors.teal,
             ),
           ],
         ),

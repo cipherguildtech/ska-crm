@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ska_crm/teams/pages/dashboard/dashboard.dart';
 import 'package:ska_crm/teams/pages/my_tasks/my_tasks.dart';
-import 'package:ska_crm/teams/widgets/navbar.dart';
-
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
+import '../public/navigation/navbar.dart';
 
 class TeamsMainPage extends StatefulWidget {
   const TeamsMainPage({super.key});
@@ -55,7 +54,8 @@ class _TeamsMainPageState extends State<TeamsMainPage> {
 
       body: _pages[_selectedIndex],
 
-      bottomNavigationBar: TeamsBottomNav(
+      bottomNavigationBar: CustomNavBar(
+        role: "TEAM",
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),

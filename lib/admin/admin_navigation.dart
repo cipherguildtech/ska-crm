@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../public/navigation/navbar.dart';
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
-import 'widgets/navbar.dart';
 
 class AdminMainPage extends StatefulWidget {
   const AdminMainPage({super.key});
@@ -20,7 +20,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
   final List<Widget> _pages = [
     const Center(child: Text("Dashboard")),
     const Center(child: Text("Projects")),
-    const Center(child: Text("Teams")),
+    const Center(child: Text("Manage")),
   ];
 
   @override
@@ -60,7 +60,8 @@ class _AdminMainPageState extends State<AdminMainPage> {
 
       body: _pages[_selectedIndex],
 
-      bottomNavigationBar: AdminBottomNav(
+      bottomNavigationBar: CustomNavBar(
+        role: "ADMIN",
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),

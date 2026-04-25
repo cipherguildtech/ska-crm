@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
-
 import '../../../provider/provider.dart';
 import 'completed_detailed_task.dart';
 import 'in_completed_detailed_task.dart';
@@ -153,7 +151,7 @@ class ToggleTabs extends StatelessWidget {
               decoration: BoxDecoration(
                 color: taskProvider.isCompletedSelected
                     ? Colors.white
-                    : primary.withValues(alpha: 0.1),
+                    : Colors.teal.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Center(
@@ -164,7 +162,7 @@ class ToggleTabs extends StatelessWidget {
                       Icons.watch_later_outlined,
                       color: taskProvider.isCompletedSelected
                           ? Colors.grey
-                          : primary,
+                          : Colors.teal,
                       size: 20,
                     ),
                     const SizedBox(width: 4),
@@ -173,7 +171,7 @@ class ToggleTabs extends StatelessWidget {
                       style: TextStyle(
                         color: taskProvider.isCompletedSelected
                             ? Colors.grey
-                            : primary,
+                            : Colors.teal,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -193,7 +191,7 @@ class ToggleTabs extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
                 color: taskProvider.isCompletedSelected
-                    ? primary.withValues(alpha: 0.1)
+                    ? Colors.teal.withValues(alpha: 0.1)
                     : Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -204,7 +202,7 @@ class ToggleTabs extends StatelessWidget {
                     Icon(
                       Icons.check_circle_outline,
                       color: taskProvider.isCompletedSelected
-                          ? primary
+                          ? Colors.teal
                           : Colors.grey,
                       size: 20,
                     ),
@@ -213,7 +211,7 @@ class ToggleTabs extends StatelessWidget {
                       "Complete",
                       style: TextStyle(
                         color: taskProvider.isCompletedSelected
-                            ? primary
+                            ? Colors.teal
                             : Colors.grey,
                         fontWeight: FontWeight.w600,
                       ),

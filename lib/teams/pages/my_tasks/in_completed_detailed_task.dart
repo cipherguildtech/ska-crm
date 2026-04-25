@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class InCompletedTaskDetailsScreen extends StatefulWidget {
   const InCompletedTaskDetailsScreen({super.key});
@@ -45,12 +43,12 @@ class _InCompletedTaskDetailsScreenState
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children:[
             Text(
               "SKA-2025-0042",
               style: TextStyle(
                 fontSize: 13,
-                color: primary,
+                color: Colors.teal,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -372,18 +370,18 @@ class _InCompletedTaskDetailsScreenState
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: () {},
-        icon: const Icon(Icons.play_circle_outline, color: primary),
+        icon: const Icon(Icons.play_circle_outline, color: Colors.teal),
         label: const Text(
           "Start Work",
           style: TextStyle(
-            color: primary,
+            color: Colors.teal,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: BorderSide(color: primary, width: 2),
+          side: BorderSide(color: Colors.teal, width: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),

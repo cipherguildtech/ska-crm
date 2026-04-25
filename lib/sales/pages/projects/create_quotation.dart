@@ -1,6 +1,5 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class CreateQuotationScreen extends StatelessWidget {
   const CreateQuotationScreen({super.key});
@@ -63,7 +62,7 @@ class CreateQuotationScreen extends StatelessWidget {
                   child: Text(
                     "2 Items",
                     style: TextStyle(
-                      color: primary,
+                      color: Colors.teal,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

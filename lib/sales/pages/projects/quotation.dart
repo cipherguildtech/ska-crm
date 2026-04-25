@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
-
 import 'create_quotation.dart';
 
 class QuotationsScreen extends StatelessWidget {
@@ -29,8 +27,8 @@ class QuotationsScreen extends StatelessWidget {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: primary,
-                shadowColor: primary,
+                foregroundColor: Colors.teal,
+                shadowColor: Colors.teal,
               ),
               onPressed: () {
                 Navigator.push(
@@ -91,19 +89,19 @@ class InfoBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.1),
+        color: Colors.teal.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: const [
-          Icon(Icons.info_outline, size: 18, color: primary),
+          Icon(Icons.info_outline, size: 18, color: Colors.teal),
           SizedBox(width: 8),
           Expanded(
             child: Text(
               "Only one quotation can be approved at a time.",
               style: TextStyle(
                 fontSize: 13,
-                color: primary,
+                color: Colors.teal,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -311,7 +309,7 @@ class QuoteCard extends StatelessWidget {
           ),
         ),
         side: WidgetStateProperty.all(
-          BorderSide(color: text == "View" ? primary : Colors.black),
+          BorderSide(color: text == "View" ? Colors.teal : Colors.black),
         ),
       ),
       onPressed: () {},
@@ -320,14 +318,14 @@ class QuoteCard extends StatelessWidget {
         children: [
           Icon(
             text == "View" ? Icons.remove_red_eye_outlined : Icons.edit,
-            color: text == "View" ? primary : Colors.black,
+            color: text == "View" ? Colors.teal : Colors.black,
             size: 15,
           ),
           SizedBox(width: 5),
           Text(
             text,
             style: TextStyle(
-              color: text == "View" ? primary : Colors.black,
+              color: text == "View" ? Colors.teal : Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),

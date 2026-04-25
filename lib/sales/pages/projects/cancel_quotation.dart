@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class RequestCancellationPage extends StatefulWidget {
   const RequestCancellationPage({super.key});
@@ -244,7 +243,7 @@ class _RequestCancellationPageState extends State<RequestCancellationPage> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: primary,
+                  foregroundColor: Colors.teal,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

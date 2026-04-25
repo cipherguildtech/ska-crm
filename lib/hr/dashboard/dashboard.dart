@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:ska_crm/utils/config.dart';
+import '../services/dashboard.dart';
+import 'widgets/status_card.dart';
+import 'widgets/filter_tabs.dart';
+import 'widgets/task_card.dart';
+import 'widgets/team_availability.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -20,23 +22,29 @@ class _DashboardPageState extends State<DashboardPage> {
   int inProgress = 0;
   int delayed = 0;
   int incomplete = 0;
-  int selectedFilter = 0; // 0 = To Assign, 1 = In Progress, 2 = In Review
+  int selectedFilter = 0;
   List tasks = [];
   List teams = [];
   List toAssign = [];
   List inProgressList = [];
   List inReview = [];
   bool isLoading = true;
+  int completedTasks = 0;
+  int cancelled = 0;
+  int review = 0;
+  int incompleteTasks = 0;
+  int draftQuotation = 0;
+  int sentQuotation = 0;
+  int approvedQuotation = 0;
+  int rejectedQuotation = 0;
+  int projectWithoutTask = 0;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   fetchDashboard();
-  // }
+  final DashboardService _dashboardService = DashboardService();
+
   @override
   void initState() {
     super.initState();
-    fetchDashboard(); // 👈 instead of API
+    fetchDashboard();
   }
 
   List get currentTasks {
@@ -44,268 +52,66 @@ class _DashboardPageState extends State<DashboardPage> {
     if (selectedFilter == 1) return inProgressList;
     return inReview;
   }
-  /// 🔽 API CALL
-  Future<void> fetchDashboard() async {
-    try {
-      final uri = Uri.parse("$baseUrl/tasks/hr_dashboard");
 
-      final response = await http.get(uri);
-      final data = jsonDecode(response.body);
+  Future<void> fetchDashboard() async {
+    setState(() => isLoading = true);
+
+    final response = await _dashboardService.fetchDashboard();
+
+    if (response["success"]) {
+      final data = response["data"];
 
       setState(() {
-        /// 🔷 COUNTS
         pending = data['pendingTasks'] ?? 0;
         inProgress = data['inProgressTasks'] ?? 0;
+        completedTasks = data['completedTasks'] ?? 0;
+        cancelled = data['cancelledTasks'] ?? 0;
+        review = data['reviewTasks'] ?? 0;
         delayed = data['delayedTasks'] ?? 0;
+        incompleteTasks = data['incompleteTasks'] ?? 0;
 
-        /// QUOTATION (sum all)
-        quotation =
-            (data['draftQuotation'] ?? 0) +
-                (data['sentQuotation'] ?? 0) +
-                (data['approvedQuotation'] ?? 0);
+        draftQuotation = data['draftQuotation'] ?? 0;
+        sentQuotation = data['sentQuotation'] ?? 0;
+        approvedQuotation = data['approvedQuotation'] ?? 0;
+        rejectedQuotation = data['rejectedQuotation'] ?? 0;
 
         completed = data['completedProjects'] ?? 0;
         incomplete = data['notCompletedProjects'] ?? 0;
+        projectWithoutTask = data['projectWithoutAnyTask'] ?? 0;
 
-        /// 🔷 TASK LISTS
-        inProgressList = List<Map<String, dynamic>>.from(
-          data['taskInProgress'] ?? [],
-        );
-
-        inReview = List<Map<String, dynamic>>.from(
-          data['taskForReview'] ?? [],
-        );
-
-        /// OPTIONAL (if backend gives later)
-        toAssign = List<Map<String, dynamic>>.from(
-          data['taskToAssign'] ?? [],
-        );
-
-        /// 🔷 TEAMS
-        teams = List<Map<String, dynamic>>.from(
-          data['teams'] ?? [],
-        );
+        toAssign = data['tasksToAssign'] ?? [];
+        inProgressList = data['taskInProgress'] ?? [];
+        inReview = data['taskForReview'] ?? [];
+        teams = data['teams'] ?? [];
 
         isLoading = false;
       });
-    } catch (e) {
-      debugPrint("Dashboard error: $e");
+    } else {
+      setState(() => isLoading = false);
+
+      _showMessage(
+        response["message"] ?? "Failed to load dashboard",
+        isError: true,
+      );
     }
   }
-  /// 🔷 STATUS CARD
-  Widget statusCard(String title, int count, Color color, IconData icon) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color),
-          const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text("$count",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
-              Text(title,
-                  style: TextStyle(fontSize: 11, color: color)),
-            ],
-          )
-        ],
-      ),
-    );
-  }
 
-  Widget filterTabs() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          filterItem("To Assign (${toAssign.length})", 0),
-          filterItem("In Progress (${inProgressList.length})", 1),
-          filterItem("In Review (${inReview.length})", 2),
-        ],
-      ),
-    );
-  }
-
-  Widget teamAvailability() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 10),
-
-        /// HEADER
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Team Availability",
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            GestureDetector(
-              onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (_) => TeamDetailsPage(teams: teams),
-                //   ),
-                // );
-              },
-              child: const Text(
-                "See all",
-                style: TextStyle(color: primary),
-              ),
-            ),
-          ],
+  void _showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontSize: 13),
         ),
-
-        const SizedBox(height: 10),
-
-        /// TEAM LIST
-        Column(
-          children: teams.map((team) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 8,
-                  )
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.person_outline),
-                  const SizedBox(width: 10),
-
-                  Text(team['name']),
-
-                  const Spacer(),
-
-                  Text("${team['tasks']} Tasks"),
-                ],
-              ),
-            );
-          }).toList(),
-        )
-      ],
-    );
-  }
-
-  Widget filterItem(String title, int index) {
-    final isSelected = selectedFilter == index;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedFilter = index;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Center(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? primary : Colors.black54,
-              ),
-            ),
-          ),
+        backgroundColor: isError ? Colors.red : primary,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-      ),
-    );
-  }
-
-  Widget taskCard(Map task) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.05), blurRadius: 6)
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          Row(
-            children: [
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(task['title'] ?? ""),
-              ),
-              const Spacer(),
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  border: Border.all(color: primary),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  task['department'] ?? "",
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            task['title'] ?? "",
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              const Icon(Icons.circle_outlined, size: 14, color: primary),
-              const SizedBox(width: 5),
-              Text(
-                task['status'] ?? "Unassigned",
-                style: const TextStyle(color: primary),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () {},
-                child: const Text("Assign"),
-              )
-            ],
-          )
-        ],
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: const Duration(seconds: 2),
+        elevation: 6,
       ),
     );
   }
@@ -323,6 +129,7 @@ class _DashboardPageState extends State<DashboardPage> {
     ];
     return months[month - 1];
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -330,17 +137,15 @@ class _DashboardPageState extends State<DashboardPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              /// 🔷 HEADER
               const Text(
                 "Work Status",
-                style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal, ),
               ),
 
               const SizedBox(height: 4),
@@ -352,63 +157,147 @@ class _DashboardPageState extends State<DashboardPage> {
 
               const SizedBox(height: 15),
 
-              /// 🔷 STATUS GRID
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 2.2,
+                mainAxisSpacing: 15,
+                childAspectRatio: 2.0,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  statusCard("Pending", pending, Colors.teal, Icons.pending),
-                  statusCard("Progress", inProgress, Colors.blue, Icons.work),
-                  statusCard("Delayed", delayed, Colors.red, Icons.warning),
-                  statusCard("Quotation", quotation, Colors.orange, Icons.description),
-                  statusCard("Incomplete", incomplete, Colors.grey, Icons.cancel),
-                  statusCard("Completed", completed, Colors.green, Icons.check_circle),
+                  StatusCard(
+                    title: "No Task Projects",
+                    count: projectWithoutTask,
+                    color: Colors.brown,
+                    icon: Icons.block,
+                  ),
+                  StatusCard(
+                    title: "Review",
+                    count: review,
+                    color: Colors.purple,
+                    icon: Icons.rate_review,
+                  ),
+                  StatusCard(
+                    title: "Pending",
+                    count: pending,
+                    color: Colors.teal,
+                    icon: Icons.pending,
+                  ),
+                  StatusCard(
+                    title: "In Progress",
+                    count: inProgress,
+                    color: Colors.blue,
+                    icon: Icons.work,
+                  ),
+                  StatusCard(
+                    title: "Incomplete Tasks",
+                    count: incompleteTasks,
+                    color: Colors.black54,
+                    icon: Icons.error,
+                  ),
+                  StatusCard(
+                    title: "Completed Tasks",
+                    count: completedTasks,
+                    color: Colors.green,
+                    icon: Icons.check,
+                  ),
+                  StatusCard(
+                    title: "Cancelled",
+                    count: cancelled,
+                    color: Colors.red,
+                    icon: Icons.cancel,
+                  ),
+                  StatusCard(
+                    title: "Delayed",
+                    count: delayed,
+                    color: Colors.orange,
+                    icon: Icons.warning,
+                  ),
+                  StatusCard(
+                    title: "Draft Quote",
+                    count: draftQuotation,
+                    color: Colors.grey,
+                    icon: Icons.description,
+                  ),
+                  StatusCard(
+                    title: "Sent Quote",
+                    count: sentQuotation,
+                    color: Colors.blueGrey,
+                    icon: Icons.send,
+                  ),
+                  StatusCard(
+                    title: "Approved Quote",
+                    count: approvedQuotation,
+                    color: Colors.green,
+                    icon: Icons.thumb_up,
+                  ),
+                  StatusCard(
+                    title: "Rejected Quote",
+                    count: rejectedQuotation,
+                    color: Colors.red,
+                    icon: Icons.thumb_down,
+                  ),
+                  StatusCard(
+                    title: "Completed Projects",
+                    count: completed,
+                    color: Colors.green,
+                    icon: Icons.done_all,
+                  ),
+                  StatusCard(
+                    title: "Incomplete Projects",
+                    count: incomplete,
+                    color: Colors.black54,
+                    icon: Icons.close,
+                  ),
+
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              /// 🔷 TASK BOARD HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text("Task Board",
-                      style:
-                      TextStyle(fontWeight: FontWeight.w600)),
-                  Text("See all",
-                      style: TextStyle(color: primary)),
+                  Text("Task Board", style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
 
               const SizedBox(height: 10),
 
-              filterTabs(),
+              FilterTabs(
+                selectedIndex: selectedFilter,
+                onChanged: (index) {
+                  setState(() {
+                    selectedFilter = index;
+                  });
+                },
+                toAssignCount: toAssign.length,
+                inProgressCount: inProgressList.length,
+                reviewCount: inReview.length,
+              ),
 
               const SizedBox(height: 10),
-              /// 🔷 TASK LIST
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
 
-                      /// TASK LIST
-                      ListView.builder(
-                        itemCount: currentTasks.length,
-                        itemBuilder: (_, i) => taskCard(currentTasks[i]),
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                      ),
-
-                      /// TEAM AVAILABILITY 👇
-                      teamAvailability(),
-                    ],
+              /// TASK LIST (NO ListView!)
+              if (currentTasks.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: Text("No tasks available", style: TextStyle(color: Colors.grey)),
                   ),
+                )
+              else
+                Column(
+                  children: currentTasks
+                      .map<Widget>((task) => TaskCard(task: task))
+                      .toList(),
                 ),
-              ),
+
+              const SizedBox(height: 10),
+
+              TeamAvailability(teams: teams),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),

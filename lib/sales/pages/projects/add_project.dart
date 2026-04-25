@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class NewCustomerProjectScreen extends StatefulWidget {
   const NewCustomerProjectScreen({super.key});
@@ -75,7 +73,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             padding: EdgeInsets.only(right: 16),
             child: Row(
               children: [
-                Icon(Icons.save, color: primary, size: 17),
+                Icon(Icons.save, color: Colors.teal, size: 17),
                 Text("Draft", style: TextStyle(color: Colors.teal)),
               ],
             ),
@@ -147,7 +145,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
                       ? Colors.white
                       : Colors.black,
                   selected: selected,
-                  selectedColor: primary,
+                  selectedColor: Colors.teal,
                   onSelected: (_) {
                     setState(() {
                       selected
@@ -523,7 +521,7 @@ class SectionTitle extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.1),
+              color: Colors.teal.withValues(alpha: 0.1),
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: Icon(icon, color: Colors.teal),

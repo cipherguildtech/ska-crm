@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -114,12 +113,12 @@ class CustomerTile extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: primary, width: 2),
+                border: Border.all(color: Colors.teal, width: 2),
                 borderRadius: BorderRadius.all(Radius.circular(20)),
               ),
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(Icons.person_2_outlined, color: primary, size: 30),
+                child: Icon(Icons.person_2_outlined, color: Colors.teal, size: 30),
               ),
             ),
             const SizedBox(width: 12),

@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
@@ -210,7 +209,7 @@ class TaskCard extends StatelessWidget {
                 backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: primary, width: 2),
+                  side: BorderSide(color: Colors.teal, width: 2),
                 ),
               ),
               const Spacer(),

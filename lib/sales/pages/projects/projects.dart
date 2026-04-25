@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
 import 'package:ska_crm/sales/pages/projects/project_details.dart';
-
 import 'add_project.dart';
 
 class Project {
@@ -337,7 +335,7 @@ class ProjectCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.layers_outlined, color: primary),
+                Icon(Icons.layers_outlined, color: Colors.teal),
                 Text(subtitle, style: const TextStyle(color: Colors.grey)),
               ],
             ),
@@ -347,7 +345,7 @@ class ProjectCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 16, color: primary),
+                    const Icon(Icons.calendar_today, size: 16, color: Colors.teal),
                     const SizedBox(width: 6),
                     Text(date),
                   ],

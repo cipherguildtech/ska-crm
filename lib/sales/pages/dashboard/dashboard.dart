@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/widgets/navbar.dart';
-
 import 'widget.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -111,10 +109,10 @@ class DashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              const Center(
+               Center(
                 child: Text(
                   "UPDATED 2 MINS AGO • HIGH CONTRAST MODE ACTIVE",
-                  style: TextStyle(fontSize: 12, color: primary),
+                  style: TextStyle(fontSize: 12, color: Colors.teal),
                 ),
               ),
             ],
