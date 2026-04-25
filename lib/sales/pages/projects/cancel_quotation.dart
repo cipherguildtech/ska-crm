@@ -34,7 +34,7 @@ class _RequestCancellationPageState extends State<RequestCancellationPage> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: Colors.teal.withOpacity(0.1),
+            backgroundColor: Colors.teal.withValues(alpha: 0.1),
             child: Icon(icon, color: Colors.teal),
           ),
           const SizedBox(width: 12),
