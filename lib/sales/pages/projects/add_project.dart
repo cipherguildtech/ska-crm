@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ska_crm/admin/widgets/navbar.dart';
 
 class NewCustomerProjectScreen extends StatefulWidget {
@@ -37,6 +40,20 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
     'BRANDING',
     'OTHERS',
   ];
+  final ImagePicker _picker = ImagePicker();
+  List<File> images = [];
+
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        images.add(File(pickedFile.path));
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +108,8 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
               "Address",
               null,
               hint: "Enter installation site or billing address...",
+
+              isRequired: true,
             ),
 
             const SizedBox(height: 12),
@@ -104,7 +123,13 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
               icon: CupertinoIcons.briefcase,
             ),
 
-            const Text("Service Type *"),
+            Row(
+              children: [
+                const Text("Service Type"),
+                SizedBox(width: 5),
+                const Text("*", style: TextStyle(color: Colors.red)),
+              ],
+            ),
             const SizedBox(height: 8),
 
             Wrap(
@@ -113,7 +138,16 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
                 final selected = selectedServices.contains(service);
                 return ChoiceChip(
                   label: Text(service),
+                  labelStyle: TextStyle(
+                    color: selectedServices.contains(service)
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  checkmarkColor: selectedServices.contains(service)
+                      ? Colors.white
+                      : Colors.black,
                   selected: selected,
+                  selectedColor: primary,
                   onSelected: (_) {
                     setState(() {
                       selected
@@ -128,9 +162,10 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             const SizedBox(height: 16),
 
             buildTextField(
-              "Project Description *",
+              "Project Description",
               descController,
               maxLines: 4,
+              isRequired: true,
             ),
 
             const SizedBox(height: 16),
@@ -142,20 +177,21 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             const Text("Attachments (Up to 3)"),
             const SizedBox(height: 8),
 
-            Row(
-              children: [
-                buildAttachmentBox(icon: Icons.add),
-                buildAttachmentBox(),
-                buildAttachmentBox(),
-              ],
-            ),
+            _attachmentsRow(),
 
             const SizedBox(height: 24),
 
-            const Center(
-              child: Text(
-                "Reset All Fields",
-                style: TextStyle(color: Colors.grey),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    images.clear();
+                  });
+                },
+                child: const Text(
+                  "Reset All Fields",
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
             ),
 
@@ -183,12 +219,92 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
                 onPressed: () {},
                 child: const Text(
                   "Create Project",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _attachmentsRow() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            ...images.map(
+              (img) => Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: FileImage(img),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            images.remove(img);
+                          });
+                        },
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            _addBox(),
+          ],
+        ),
+        Row(
+          children: [
+            Icon(Icons.image, color: Colors.grey),
+            SizedBox(width: 5),
+            Text("Supported: JPG, PNG(Max 8MB)"),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _addBox() {
+    return InkWell(
+      onTap: _pickImage,
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(child: Icon(Icons.add)),
       ),
     );
   }
@@ -211,13 +327,32 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
           ],
         ),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField(
           controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
+          validator: (value) {
+            // Required field validation
+            if (isRequired && (value == null || value.isEmpty)) {
+              return "$label is required";
+            }
+
+            // Email validation (only if label matches AND value is not empty)
+            if (label == "Email (Optional)" &&
+                value != null &&
+                value.isNotEmpty) {
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+              if (!emailRegex.hasMatch(value)) {
+                return "Enter a valid email address";
+              }
+            }
+
+            return null;
+          },
         ),
       ],
     );
@@ -287,10 +422,16 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Customer Type *"),
+        Row(
+          children: [
+            const Text("Customer Type"),
+            SizedBox(width: 5),
+            const Text("*", style: TextStyle(color: Colors.red)),
+          ],
+        ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: customerType,
+          initialValue: customerType,
           items: [
             "REFERRAL",
             "WALK-IN",
@@ -313,7 +454,14 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Deadline *"),
+        Row(
+          children: [
+            const Text("Deadline"),
+            SizedBox(width: 5),
+            const Text("*", style: TextStyle(color: Colors.red)),
+          ],
+        ),
+
         const SizedBox(height: 6),
         GestureDetector(
           onTap: () async {

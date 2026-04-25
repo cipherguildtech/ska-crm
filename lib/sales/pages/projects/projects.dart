@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ska_crm/admin/widgets/navbar.dart';
+import 'package:ska_crm/sales/pages/projects/project_details.dart';
 
 import 'add_project.dart';
 
@@ -300,7 +301,12 @@ class ProjectCard extends StatelessWidget {
     final isActive = status == "Active";
 
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => ProjectDashboard()),
+        );
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
