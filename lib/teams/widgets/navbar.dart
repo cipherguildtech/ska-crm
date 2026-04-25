@@ -18,9 +18,9 @@ class TeamsBottomNav extends StatelessWidget {
       currentIndex: currentIndex,
       onTap: onTap,
 
-      backgroundColor: primary,
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.white70,
+      backgroundColor: Colors.white,
+      selectedItemColor: primary,
+      unselectedItemColor: Colors.grey,
 
       type: BottomNavigationBarType.fixed,
 
@@ -31,12 +31,9 @@ class TeamsBottomNav extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.cases_outlined),
-          label: "Projects",
+          label: "My tasks",
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: "Manage",
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Profile"),
       ],
     );
   }

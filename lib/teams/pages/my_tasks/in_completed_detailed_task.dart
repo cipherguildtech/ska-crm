@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ska_crm/admin/widgets/navbar.dart';
 
-class TaskDetailsScreen extends StatefulWidget {
-  const TaskDetailsScreen({super.key});
+class InCompletedTaskDetailsScreen extends StatefulWidget {
+  const InCompletedTaskDetailsScreen({super.key});
 
   @override
-  State<TaskDetailsScreen> createState() => _TaskDetailsScreenState();
+  State<InCompletedTaskDetailsScreen> createState() =>
+      _InCompletedTaskDetailsScreenState();
 }
 
-class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
+class _InCompletedTaskDetailsScreenState
+    extends State<InCompletedTaskDetailsScreen> {
   final ImagePicker _picker = ImagePicker();
   List<File> images = [];
 
@@ -34,7 +36,13 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: const Icon(Icons.arrow_back, color: Colors.black),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          color: Colors.black,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ska_crm/sales/pages/dashboard/dashboard.dart';
+import 'package:ska_crm/sales/pages/projects/projects.dart';
+
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
 import 'widgets/navbar.dart';
@@ -18,8 +21,8 @@ class _SalesMainPageState extends State<SalesMainPage> {
   String department = "";
 
   final List<Widget> _pages = [
-    const Center(child: Text("Dashboard")),
-    const Center(child: Text("Projects")),
+    DashboardScreen(),
+    ProjectsPage(),
     const Center(child: Text("Teams")),
   ];
 
@@ -46,17 +49,9 @@ class _SalesMainPageState extends State<SalesMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        name: name,
-        role: role,
-        department: department,
-      ),
+      appBar: CustomAppBar(name: name, role: role, department: department),
 
-      drawer: CustomDrawer(
-        name: name,
-        role: role,
-        department: department,
-      ),
+      drawer: CustomDrawer(name: name, role: role, department: department),
 
       body: _pages[_selectedIndex],
 

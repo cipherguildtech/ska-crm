@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:3000
+### PROJECTS - create 10 projects first
+
+# @name createProject1
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "project_code": "Shiva Weds Hrishi",
+  "customer_email": "operations@malabargold-kannur.local",
+  "service_type": "INVITATION",
+  "description": "Premium front elevation LED sign board with gold acrylic letters and warm backlight.",
+  "deadline": "2026-05-03T18:00:00.000Z",
+  "created_user_email": "123bala2000@gmail.com"
+}
