@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../assign_task/assign_task.dart';
+import '../assign_task/projectdetails.dart';
 import '../in_progress/in_progress.dart';
 import '../review/review.dart';
 
@@ -105,8 +105,8 @@ class TaskCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => AssignTaskPage(
-                          projectId: task['project_code'] ?? "",
+                        builder: (_) => ProjectDetailsPage(
+                          projectId: task['id'] ?? "",
                         ),
                       ),
                     );

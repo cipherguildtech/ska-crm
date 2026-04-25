@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../utils/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -106,14 +107,27 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
 
   Future<void> submitAction(String status, String reason) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = prefs.getString('phone');
+
+      if (phone == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("User not logged in")),
+        );
+        return;
+      }
+
+      final payload = {
+        "task_id": widget.taskId,
+        "action": status,
+        "phone": phone,
+        "reason": reason,
+      };
+
       final res = await http.post(
-        Uri.parse("$baseUrl/tasks/review"),
+        Uri.parse("$baseUrl/tasks/accept_or_reject"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "task_id": widget.taskId,
-          "status": status,
-          "reason": reason,
-        }),
+        body: jsonEncode(payload),
       );
 
       if (res.statusCode == 200 || res.statusCode == 201) {
@@ -123,11 +137,11 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
 
         Navigator.pop(context, true);
       } else {
-        throw Exception();
+        throw Exception(res.body);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Something went wrong")),
+        SnackBar(content: Text("Error: $e")),
       );
     }
   }
