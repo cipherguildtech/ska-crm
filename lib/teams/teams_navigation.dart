@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ska_crm/teams/pages/dashboard/dashboard.dart';
+import 'package:ska_crm/teams/pages/my_tasks/my_tasks.dart';
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
-import 'widgets/navbar.dart';
+import '../public/navigation/navbar.dart';
 
 class TeamsMainPage extends StatefulWidget {
   const TeamsMainPage({super.key});
@@ -18,8 +20,8 @@ class _TeamsMainPageState extends State<TeamsMainPage> {
   String department = "";
 
   final List<Widget> _pages = [
-    const Center(child: Text("Dashboard")),
-    const Center(child: Text("Projects")),
+    Dashboard(),
+    TasksPage(),
     const Center(child: Text("Teams")),
   ];
 
@@ -46,21 +48,14 @@ class _TeamsMainPageState extends State<TeamsMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        name: name,
-        role: role,
-        department: department,
-      ),
+      appBar: CustomAppBar(name: name, role: role, department: department),
 
-      drawer: CustomDrawer(
-        name: name,
-        role: role,
-        department: department,
-      ),
+      drawer: CustomDrawer(name: name, role: role, department: department),
 
       body: _pages[_selectedIndex],
 
-      bottomNavigationBar: TeamsBottomNav(
+      bottomNavigationBar: CustomNavBar(
+        role: "TEAM",
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
