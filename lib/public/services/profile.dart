@@ -6,7 +6,7 @@ class ProfileService {
 
    Future<Map<String, dynamic>?> fetchProfile(String phone) async {
     try {
-      final uri = Uri.parse("$baseUrl/users/${Uri.encodeComponent(phone)}");
+      final uri = Uri.parse("$baseUrl/users/detail/${Uri.encodeComponent(phone)}");
 
       final response = await http.get(uri);
 
