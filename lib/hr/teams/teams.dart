@@ -1,46 +1,93 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'staff_details/staff_details.dart';
 
-import 'staff_details_page.dart';
 
-class Teams extends StatelessWidget {
+class Teams extends StatefulWidget {
   const Teams({super.key});
+
+  @override
+  State<Teams> createState() => _TeamsState();
+}
+
+class _TeamsState extends State<Teams> {
+  late Future<List<TeamMember>> futureTeams;
+  bool sortHighToLow = true;
+
+  @override
+  void initState() {
+    super.initState();
+    futureTeams = fetchTeams();
+  }
+
+  Future<List<TeamMember>> fetchTeams() async {
+    final response = await http.get(
+      Uri.parse("https://kz2nkt6c-3000.inc1.devtunnels.ms/users/tasks"),
+    );
+
+    if (response.statusCode == 200) {
+      List data = jsonDecode(response.body);
+      return data.map((e) => TeamMember.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load teams");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Colors.white,
 
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 10),
 
-              // Center Header Title
+              const SizedBox(height: 20),
+
               const Center(
                 child: Text(
                   "Teams Details",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.teal
                   ),
                 ),
               ),
 
               const SizedBox(height: 15),
 
-              // Search bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: "Search by name or department",
+                    hintStyle: TextStyle(color: Colors.teal.withValues(alpha: 0.6)),
                     prefixIcon: const Icon(Icons.search),
+                    prefixIconColor: Colors.teal,
                     filled: true,
-                    fillColor: Colors.grey.shade200,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: Colors.teal,
+                        width: 1,
+                      ),
+                    ),
+
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: Colors.teal,
+                        width: 1,
+                      ),
+                    ),
+
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ),
@@ -48,144 +95,132 @@ class Teams extends StatelessWidget {
 
               const SizedBox(height: 15),
 
-              // Filter Chips
-              SizedBox(
-                height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    buildChip("All", true),
-                    buildChip("Available", false),
-                    buildChip("Busy", false),
-                    buildChip("Overdue", false),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // Header Row
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "ALL STAFFS (40)",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    Row(
+                child: FutureBuilder<List<TeamMember>>(
+                  future: futureTeams,
+                  builder: (context, snapshot) {
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(child: Text("Error: ${snapshot.error}"));
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text("No team members found"));
+                    }
+                    final teams = List<TeamMember>.from(snapshot.data!);
+
+                    teams.sort((a, b) => sortHighToLow
+                        ? b.tasks.compareTo(a.tasks)
+                        : a.tasks.compareTo(b.tasks));
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Sort By",
-                          style: TextStyle(color: Colors.teal),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "ALL STAFFS (${teams.length})",
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.filter_list, color: Colors.teal),
+                              onSelected: (value) {
+                                setState(() {
+                                  if (value == 'high_to_low') {
+                                    sortHighToLow = true;
+                                  } else if (value == 'low_to_high') {
+                                    sortHighToLow = false;
+                                  }
+                                });
+                              },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'high_to_low',
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.arrow_downward, color: Colors.teal),
+                                      SizedBox(width: 8),
+                                      Text("High → Low Tasks"),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'low_to_high',
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.arrow_upward, color: Colors.teal),
+                                      SizedBox(width: 8),
+                                      Text("Low → High Tasks"),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        Icon(Icons.chevron_right, color: Colors.teal)
+
+                        const SizedBox(height: 10),
+
+                        Column(
+                          children: teams.map((member) {
+                            return StaffCard(
+                              name: member.name,
+                              role: "${member.department ?? ''} ${member.role} ",
+                              tasks: member.tasks,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => StaffDetail(phone: member.phone),                                  ),
+                                );
+                              },
+                            );
+                          }).toList(),
+                        ),
                       ],
-                    )
-                  ],
+                    );
+                  },
                 ),
               ),
 
-              const SizedBox(height: 10),
-
-              // Staff List (no Expanded!)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    StaffCard(
-                      name: "Sarah Jenkins",
-                      role: "Senior UI Designer • Creative",
-                      status: "AVAILABLE",
-                      tasks: 2,
-                      statusColor: Colors.grey,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const StaffDetailPage(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    StaffCard(
-                      name: "Michael Chen",
-                      role: "Fullstack Developer • Engineering",
-                      status: "BUSY",
-                      tasks: 5,
-                      statusColor: Colors.grey,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const StaffDetailPage(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    StaffCard(
-                      name: "Elena Rodriguez",
-                      role: "Project Manager • Operations",
-                      status: "OVERLOADED",
-                      tasks: 12,
-                      statusColor: Colors.red,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const StaffDetailPage(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    StaffCard(
-                      name: "David Smith",
-                      role: "Backend Architect • Engineering",
-                      status: "AVAILABLE",
-                      tasks: 1,
-                      statusColor: Colors.grey,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const StaffDetailPage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 80), // space for FAB
+              const SizedBox(height: 80),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  static Widget buildChip(String label, bool selected) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        selectedColor: Colors.teal.withOpacity(0.2),
-        labelStyle: TextStyle(
-          color: selected ? Colors.teal : Colors.grey,
-        ),
-        shape: StadiumBorder(
-          side: BorderSide(
-            color: selected ? Colors.teal : Colors.grey.shade300,
-          ),
-        ),
-        onSelected: (_) {},
-      ),
+class TeamMember {
+  final String name;
+  final String role;
+  final String? department;
+  final int tasks;
+  final String phone; // ✅ ADD THIS
+
+  TeamMember({
+    required this.name,
+    required this.role,
+    required this.department,
+    required this.tasks,
+    required this.phone,
+  });
+
+  factory TeamMember.fromJson(Map<String, dynamic> json) {
+    return TeamMember(
+      name: json['full_name'],
+      role: json['role'],
+      department: json['department'],
+      tasks: json['_count']?['assigned_tasks'] ?? 0,
+      phone: json['phone'] ?? "N/A", // ✅ SAFE PARSING
     );
   }
 }
@@ -193,18 +228,14 @@ class Teams extends StatelessWidget {
 class StaffCard extends StatelessWidget {
   final String name;
   final String role;
-  final String status;
   final int tasks;
-  final Color statusColor;
-  final VoidCallback? onTap; // 👈 ADD THIS
+  final VoidCallback? onTap;
 
   const StaffCard({
     super.key,
     required this.name,
     required this.role,
-    required this.status,
     required this.tasks,
-    required this.statusColor,
     this.onTap,
   });
 
@@ -212,37 +243,24 @@ class StaffCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: InkWell( // 👈 WRAP WITH INKWELL
+        color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side:  BorderSide(
+        color: Colors.teal.withValues(alpha: 0.1),
+        width: 1,
+      ),
+      ),
+      child: InkWell(
         borderRadius: BorderRadius.circular(15),
         onTap: onTap,
         child: ListTile(
-          leading: CircleAvatar(
-            radius: 25,
-            backgroundColor: Colors.teal.withOpacity(0.1),
-            child: const Icon(Icons.person, color: Colors.teal),
-          ),
           title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(role),
               const SizedBox(height: 4),
-              Row(
-                children: [
-                  if (status == "OVERLOADED")
-                    Container(
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.only(right: 5),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  Text(status, style: TextStyle(color: statusColor)),
-                ],
-              )
             ],
           ),
           trailing: Column(
@@ -259,7 +277,6 @@ class StaffCard extends StatelessWidget {
                   style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
         ),

@@ -18,8 +18,8 @@ class _AssignTaskPageState extends State<AssignTaskPage> {
       backgroundColor: const Color(0xffF5F7FA),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         centerTitle: true,
         title: const Text("Assign Task"),
       ),
@@ -60,7 +60,7 @@ class _AssignTaskPageState extends State<AssignTaskPage> {
                 padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.1),
+                  color: Colors.teal.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text("Planning",
@@ -183,7 +183,7 @@ class _AssignTaskPageState extends State<AssignTaskPage> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.teal.withOpacity(0.1)
+                    ? Colors.teal.withValues(alpha: 0.1)
                     : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -303,7 +303,7 @@ class _AssignTaskPageState extends State<AssignTaskPage> {
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.05),
+          color: Colors.black.withValues(alpha: 0.05),
           blurRadius: 10,
           offset: const Offset(0, 4),
         )

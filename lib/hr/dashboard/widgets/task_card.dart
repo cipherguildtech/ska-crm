@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../assign_task/projectdetails.dart';
 import '../in_progress/in_progress.dart';
-import '../review/review.dart';
+import '../in_review/in_review.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -35,7 +35,7 @@ class TaskCard extends StatelessWidget {
             children: [
               Container(
                 constraints: const BoxConstraints(
-                  maxWidth: 200, // 👈 limit only, not force
+                  maxWidth: 200,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -54,9 +54,9 @@ class TaskCard extends StatelessWidget {
 
               if (!isAssignTask)
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
+                    color: primary.withValues(alpha: 0.1),
                     border: Border.all(color: primary),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -64,7 +64,11 @@ class TaskCard extends StatelessWidget {
                     task['department'] ?? "",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 10),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: primary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
             ],
@@ -76,7 +80,7 @@ class TaskCard extends StatelessWidget {
             isAssignTask
                 ? task['description'] ?? ""
                 : task['title'] ?? "",
-            maxLines: 2, // allow 2 lines then ...
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
@@ -85,9 +89,6 @@ class TaskCard extends StatelessWidget {
 
           Row(
             children: [
-              const Icon(Icons.circle_outlined, size: 14, color: primary),
-              const SizedBox(width: 5),
-
               Text(
                 isAssignTask
                     ? (task['service_type'] ?? "To Assign")
@@ -132,6 +133,14 @@ class TaskCard extends StatelessWidget {
                     }
                   }
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: primary,
+                  side: const BorderSide(color: primary, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
                 child: Text(isAssignTask ? "Assign" : "View"),
               )
             ],

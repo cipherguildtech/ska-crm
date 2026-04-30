@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/dashboard.dart';
+import 'widget/team_card.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -11,9 +12,11 @@ class TeamDetailsPage extends StatefulWidget {
 }
 
 class _TeamDetailsPageState extends State<TeamDetailsPage> {
-  List teams = []; // ✅ FIXED
+  List teams = [];
+  List filteredTeams = [];
   bool isLoading = true;
 
+  final TextEditingController searchController = TextEditingController();
   final DashboardService _dashboardService = DashboardService();
 
   @override
@@ -30,6 +33,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
 
       setState(() {
         teams = data;
+        filteredTeams = data;
         isLoading = false;
       });
     } catch (e) {
@@ -37,6 +41,21 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
 
       _showMessage("Failed to load teams");
 
+    }
+  }
+
+  void filterTeams(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredTeams = teams;
+      });
+    } else {
+      setState(() {
+        filteredTeams = teams.where((team) {
+          final name = (team['name'] ?? '').toString().toLowerCase();
+          return name.contains(query.toLowerCase());
+        }).toList();
+      });
     }
   }
 
@@ -63,101 +82,72 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Team Details"),
         backgroundColor: const Color(0xFF1BA39C),
+        foregroundColor: Colors.white,
       ),
 
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : teams.isEmpty
-          ? const Center(child: Text("No team data available"))
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: teams.length,
-        itemBuilder: (context, index) {
-
-          final team = teams[index] as Map<String, dynamic>; // ✅ SAFE CAST
-
-          /// 🔹 Extract users (dynamic keys)
-          final List users = team['users'] ?? [];
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 14),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 6,
-                )
-              ],
+          ? const Center(
+        child: CircularProgressIndicator(color: Colors.teal),
+      )
+          : Column(
+          children: [
+      Padding(
+      padding: const EdgeInsets.all(16),
+      child: TextField(
+        controller: searchController,
+        onChanged: filterTeams,
+        cursorColor: Colors.teal,
+        decoration: InputDecoration(
+          hintText: "Search by team name...",
+          hintStyle: TextStyle(color: Colors.teal.withValues(alpha: 0.6)),
+          prefixIcon: const Icon(Icons.search),
+          prefixIconColor: Colors.teal,
+          filled: true,
+          fillColor: Colors.white,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(
+              color: Colors.teal,
+              width: 1,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          ),
 
-                /// 🔹 Department Header
-                Row(
-                  children: [
-                    const Icon(Icons.groups,
-                        color: Color(0xFF1BA39C)),
-                    const SizedBox(width: 10),
-
-                    Expanded(
-                      child: Text(
-                        team['name'] ?? "",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-
-                    Text(
-                      "${team['tasks'] ?? 0} Tasks",
-                      style:
-                      const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-
-                /// 🔹 USERS LIST
-                if (users.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  const Divider(),
-
-                  Column(
-                    children: users.map<Widget>((user) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.person, size: 18, color: Colors.grey),
-                            const SizedBox(width: 8),
-
-                            Expanded(
-                              child: Text(user['name'] ?? ""),
-                            ),
-
-                            Text(
-                              "${user['count'] ?? 0}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  )
-                ]
-              ],
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(
+              color: Colors.teal,
+              width: 1,
             ),
-          );
-        },
+          ),
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    ),
+
+    Expanded(
+    child: filteredTeams.isEmpty
+    ? const Center(
+    child: Text("No team data available"),
+    )
+        : ListView.builder(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    itemCount: filteredTeams.length,
+    itemBuilder: (context, index) {
+
+      final team = filteredTeams[index] as Map<String, dynamic>;
+
+      return TeamCard(team: team);
+      },
+      ),
+    ),
+    ],
       ),
     );
   }

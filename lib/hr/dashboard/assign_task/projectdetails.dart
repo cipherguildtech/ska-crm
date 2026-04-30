@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'assign_task.dart';
 
 class ProjectDetailsPage extends StatefulWidget {
@@ -10,16 +9,16 @@ class ProjectDetailsPage extends StatefulWidget {
   @override
   State<ProjectDetailsPage> createState() => _ProjectDetailsPageState();
 }
+
 class _ProjectDetailsPageState extends State<ProjectDetailsPage>
 {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
-
-      // 🔹 App Bar
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         elevation: 0,
         leading: const Icon(Icons.arrow_back, color: Colors.black),
         title: const Column(
@@ -27,9 +26,9 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
           children: [
             Text("Project Detail",
                 style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold)),
+                    color: Colors.white, fontWeight: FontWeight.bold)),
             Text("PRJ-2024-089",
-                style: TextStyle(color: Colors.teal, fontSize: 12)),
+                style: TextStyle(color: Colors.white, fontSize: 12)),
           ],
         ),
         actions: const [
@@ -40,7 +39,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
         ],
       ),
 
-      // 🔹 Floating Button
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.teal,
         onPressed: () {
@@ -61,7 +59,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
         child: Column(
           children: [
 
-            // 🔹 Project Card
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -72,7 +69,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.teal.withOpacity(0.1),
+                      color: Colors.teal.withValues(alpha: 0.1),
                       borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(15)),
                     ),
@@ -148,7 +145,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
 
             const SizedBox(height: 20),
 
-            // 🔹 Task Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
@@ -168,7 +164,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
 
             const SizedBox(height: 15),
 
-            // 🔹 Task Card
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -179,7 +174,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // Top Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
@@ -205,7 +199,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
 
                   const Divider(height: 20),
 
-                  // Info Row
                   Row(
                     children: const [
                       Icon(Icons.error_outline,
@@ -226,7 +219,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
 
                   const SizedBox(height: 15),
 
-                  // User Row
                   Row(
                     children: [
                       const CircleAvatar(
@@ -257,7 +249,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage>
 
                   const SizedBox(height: 15),
 
-                  // Bottom Icons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: const [

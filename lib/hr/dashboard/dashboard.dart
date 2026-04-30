@@ -135,7 +135,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -258,7 +258,7 @@ class _DashboardPageState extends State<DashboardPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text("Task Board", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text("Task Board", style: TextStyle(fontWeight: FontWeight.w600,fontSize: 16,color: Colors.teal)),
                 ],
               ),
 
@@ -278,7 +278,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
               const SizedBox(height: 10),
 
-              /// TASK LIST (NO ListView!)
               if (currentTasks.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(20),

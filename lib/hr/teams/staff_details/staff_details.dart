@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 
-class StaffDetailPage extends StatelessWidget {
-  const StaffDetailPage({super.key});
+class StaffDetail extends StatelessWidget {
+  final String phone;
+
+  const StaffDetail({
+    super.key,
+    required this.phone,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5F7),
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         elevation: 0,
-        leading: const Icon(Icons.arrow_back, color: Colors.black),
+        leading: const Icon(Icons.arrow_back, color: Colors.white),
         title: Column(
           children: const [
             Text("Priya Sharma",
-                style: TextStyle(color: Colors.black, fontSize: 16)),
+                style: TextStyle(color: Colors.white, fontSize: 16)),
             SizedBox(height: 2),
             Text("Marketing",
-                style: TextStyle(color: Colors.grey, fontSize: 12)),
+                style: TextStyle(color: Colors.white, fontSize: 12)),
           ],
         ),
         centerTitle: true,
-        actions: const [
-          Icon(Icons.more_vert, color: Colors.black),
-          SizedBox(width: 10),
-        ],
       ),
 
       body: SingleChildScrollView(
