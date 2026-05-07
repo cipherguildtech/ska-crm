@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../public/navigation/navbar.dart';
+import 'package:ska_crm/admin/service/service.dart';
+
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
+import '../public/navigation/navbar.dart';
 
 class AdminMainPage extends StatefulWidget {
   const AdminMainPage({super.key});
@@ -20,7 +22,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
   final List<Widget> _pages = [
     const Center(child: Text("Dashboard")),
     const Center(child: Text("Projects")),
-    const Center(child: Text("Manage")),
+    ServicesScreen(),
   ];
 
   @override
@@ -46,17 +48,9 @@ class _AdminMainPageState extends State<AdminMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        name: name,
-        role: role,
-        department: department,
-      ),
+      appBar: CustomAppBar(name: name, role: role, department: department),
 
-      drawer: CustomDrawer(
-        name: name,
-        role: role,
-        department: department,
-      ),
+      drawer: CustomDrawer(name: name, role: role, department: department),
 
       body: _pages[_selectedIndex],
 
