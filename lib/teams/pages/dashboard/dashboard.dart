@@ -1,9 +1,60 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:ska_crm/utils/config.dart';
 
-class Dashboard extends StatelessWidget {
+int totalTaskCount = 0;
+int pendingTaskCount = 0;
+int inProgressTaskCount = 0;
+int completedTaskCount = 0;
+int delayedTaskCount = 0;
+int inCompleteTaskCount = 0;
+
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
 
+class _DashboardState extends State<Dashboard> {
+  Future<void> loadCount() async {
+    final pref = await SharedPreferences.getInstance();
+    final phone = pref.get('phone');
+    print('entered');
+    final url = Uri.parse('$baseUrl/users/team/task_type_count/$phone');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200) {
+      final Map<String, dynamic> countData = jsonDecode(response.body);
+      print(countData);
+      setState(() {
+        totalTaskCount = countData['total_task_count']!;
+        completedTaskCount = countData['completed_task_count']!;
+        pendingTaskCount = countData['pending_task_count']!;
+        inProgressTaskCount = countData['in_progress_task_count']!;
+        delayedTaskCount = countData['delayed_task_count']!;
+        inCompleteTaskCount = countData['incomplete_task_count']!;
+      });
+    }
+    else {
+
+    }
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadCount();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,33 +125,33 @@ class Dashboard extends StatelessWidget {
             crossAxisSpacing: 10,
             childAspectRatio: 1.8,
             physics: const NeverScrollableScrollPhysics(),
-            children: const [
+            children: [
               StatusCard(
-                "24",
+                totalTaskCount.toString(),
                 "TOTAL TASKS",
                 Colors.teal,
                 icon: Icons.event_note,
               ),
-              StatusCard(
-                "08",
+               StatusCard(
+                 pendingTaskCount.toString(),
                 "PENDING",
                 Colors.blueGrey,
                 icon: CupertinoIcons.clock,
               ),
               StatusCard(
-                "04",
+                inProgressTaskCount.toString(),
                 "IN PROGRESS",
                 Colors.brown,
                 icon: CupertinoIcons.play,
               ),
               StatusCard(
-                "12",
+                completedTaskCount.toString(),
                 "COMPLETED",
                 Colors.green,
                 icon: Icons.check_circle_outline,
               ),
-              StatusCard("02", "DELAYED", Colors.red, icon: Icons.access_time),
-              StatusCard("12", "INCOMPLETE", Colors.orange, icon: Icons.close),
+              StatusCard(delayedTaskCount.toString(), "DELAYED", Colors.red, icon: Icons.access_time),
+              StatusCard(inCompleteTaskCount.toString(), "INCOMPLETE", Colors.orange, icon: Icons.close),
             ],
           ),
         ],
@@ -268,3 +319,4 @@ class TaskCard extends StatelessWidget {
     );
   }
 }
+
