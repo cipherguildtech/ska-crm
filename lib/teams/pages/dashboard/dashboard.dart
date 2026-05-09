@@ -1,19 +1,20 @@
+import 'dart:async';
 import 'dart:convert';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:ska_crm/utils/config.dart';
 import 'package:intl/intl.dart';
+import '../my_tasks/my_tasks.dart';
 
-int totalTaskCount = 0;
-int pendingTaskCount = 0;
-int inProgressTaskCount = 0;
-int completedTaskCount = 0;
-int delayedTaskCount = 0;
-int inCompleteTaskCount = 0;
+dynamic totalTaskCount;
+dynamic pendingTaskCount;
+dynamic inProgressTaskCount;
+dynamic completedTaskCount;
+dynamic delayedTaskCount;
+dynamic inCompleteTaskCount;
 late Future<List<TaskCard>> activeTasksFuture;
 
 class Dashboard extends StatefulWidget {
@@ -23,11 +24,12 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
 
   Future<void> loadCount() async {
     final pref = await SharedPreferences.getInstance();
     final phone = pref.get('phone');
-    print('entered');
     final url = Uri.parse('$baseUrl/users/team/task_type_count/$phone');
     final response = await http.get(
       url,
@@ -35,10 +37,11 @@ class _DashboardState extends State<Dashboard> {
         "Content-Type": "application/json",
       },
     );
-    print(response.statusCode);
+
     if(response.statusCode == 200) {
       final Map<String, dynamic> countData = jsonDecode(response.body);
       print(countData);
+
       setState(() {
         totalTaskCount = countData['total_task_count']!;
         completedTaskCount = countData['completed_task_count']!;
@@ -63,7 +66,6 @@ class _DashboardState extends State<Dashboard> {
         "Content-Type": "application/json",
       },
     );
-    print(response.statusCode);
     if(response.statusCode == 200) {
       List<dynamic>  activeTasks = jsonDecode(response.body);
       List<TaskCard> activeTaskWidgets = [
@@ -98,8 +100,26 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     loadCount();
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      final hasInternet = results.any((r) => r != ConnectivityResult.none);
+      if (hasInternet) {
+        loadCount();
+      }
+    });
     setState(() {
       activeTasksFuture = fetchActiveTasks();
+
+      _connectivitySubscription = Connectivity()
+          .onConnectivityChanged
+          .listen((List<ConnectivityResult> results) {
+        final hasInternet = results.any((r) => r != ConnectivityResult.none);
+        if (hasInternet) {
+          activeTasksFuture = fetchActiveTasks();
+        }
+      });
+
     });
   }
   @override
@@ -124,7 +144,7 @@ class _DashboardState extends State<Dashboard> {
 
                   // Error
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(child: Text('something went wrong'));
                   }
                   final activeTasks = snapshot.data!;
                   return ListView.builder(
@@ -197,31 +217,31 @@ class _DashboardState extends State<Dashboard> {
             physics: const NeverScrollableScrollPhysics(),
             children: [
               StatusCard(
-                totalTaskCount.toString(),
+                totalTaskCount != null ? totalTaskCount.toString() : '-',
                 "TOTAL TASKS",
                 Colors.teal,
                 icon: Icons.event_note,
               ),
                StatusCard(
-                 pendingTaskCount.toString(),
+                 pendingTaskCount != null ? pendingTaskCount.toString() : '-',
                 "PENDING",
                 Colors.blueGrey,
                 icon: CupertinoIcons.clock,
               ),
               StatusCard(
-                inProgressTaskCount.toString(),
+                inProgressTaskCount != null ? inProgressTaskCount.toString() : '-',
                 "IN PROGRESS",
                 Colors.brown,
                 icon: CupertinoIcons.play,
               ),
               StatusCard(
-                completedTaskCount.toString(),
+                completedTaskCount != null ? completedTaskCount.toString() : '-',
                 "COMPLETED",
                 Colors.green,
                 icon: Icons.check_circle_outline,
               ),
-              StatusCard(delayedTaskCount.toString(), "DELAYED", Colors.red, icon: Icons.access_time),
-              StatusCard(inCompleteTaskCount.toString(), "INCOMPLETE", Colors.orange, icon: Icons.close),
+              StatusCard(delayedTaskCount != null ? delayedTaskCount.toString() : '-', "DELAYED", Colors.red, icon: Icons.access_time),
+              StatusCard(inCompleteTaskCount != null ? inCompleteTaskCount.toString() : '-', "INCOMPLETE", Colors.orange, icon: Icons.close),
             ],
           ),
         ],
@@ -240,7 +260,9 @@ class _DashboardState extends State<Dashboard> {
           ),
           const Spacer(),
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+
+            },
             child: const Text("View All", style: TextStyle(color: Colors.teal)),
           ),
         ],

@@ -1,17 +1,34 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import './../../services/taskDetail.dart';
+
+String? projectCode;
+String? taskTitle;
+DateTime? deadline;
+String? department;
+String? description;
 
 class InCompletedTaskDetailsScreen extends StatefulWidget {
-  const InCompletedTaskDetailsScreen({super.key});
-
+   String taskId;
+   InCompletedTaskDetailsScreen({
+     super.key,
+     required this.taskId
+   });
   @override
-  State<InCompletedTaskDetailsScreen> createState() =>
-      _InCompletedTaskDetailsScreenState();
+  State<InCompletedTaskDetailsScreen> createState() => _InCompletedTaskDetailsScreenState();
 }
 
-class _InCompletedTaskDetailsScreenState
-    extends State<InCompletedTaskDetailsScreen> {
+
+class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScreen> {
+
+  Future<void> getTaskDetail() async {
+
+  }
+
+
+
   final ImagePicker _picker = ImagePicker();
   List<File> images = [];
 
@@ -28,7 +45,20 @@ class _InCompletedTaskDetailsScreenState
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchTask();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (projectCode == null || taskTitle == null || deadline == null || department == null) {
+      return Scaffold(
+        backgroundColor: Colors.grey.shade100,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -45,7 +75,7 @@ class _InCompletedTaskDetailsScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children:[
             Text(
-              "SKA-2025-0042",
+               projectCode!,
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.teal,
@@ -54,7 +84,7 @@ class _InCompletedTaskDetailsScreenState
             ),
             SizedBox(height: 2),
             Text(
-              "Shop Flex Banner Design",
+              taskTitle!,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
@@ -64,21 +94,21 @@ class _InCompletedTaskDetailsScreenState
           ],
         ),
         actions: [
-          Container(
+          if(deadline!.isBefore(DateTime.now())) Container(
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.red,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
+            child: Text(
               "DELAYED",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+            ) ,
           ),
         ],
       ),
@@ -87,7 +117,7 @@ class _InCompletedTaskDetailsScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _deadlineMissedCard(),
+            if(deadline!.isBefore(DateTime.now()) && deadline != null) _deadlineMissedCard(),
             const SizedBox(height: 16),
 
             const Text(
@@ -116,18 +146,23 @@ class _InCompletedTaskDetailsScreenState
             ),
 
             const SizedBox(height: 16),
-            Row(
+            if(deadline!.isBefore(DateTime.now()))Column(
               children: [
-                _sectionTitle("Reason for Delay"),
-                SizedBox(width: 5),
-                Text("*", style: TextStyle(color: Colors.red)),
+                Row(
+                  children: [
+                    _sectionTitle("Reason for Delay"),
+                    SizedBox(width: 5),
+                    Text("*", style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+                _textField("Explain why the task is delayed..."),
+                Text(
+                  "Tip: Mention if you are waiting for materials or client approval.",
+                  style: TextStyle(color: Colors.grey.shade800, fontSize: 13),
+                ),
               ],
             ),
-            _textField("Explain why the task is delayed..."),
-            Text(
-              "Tip: Mention if you are waiting for materials or client approval.",
-              style: TextStyle(color: Colors.grey.shade800, fontSize: 13),
-            ),
+
             const SizedBox(height: 16),
             _sectionTitle("Work Details / Progress"),
             _textField("Enter current work progress..."),
@@ -199,6 +234,7 @@ class _InCompletedTaskDetailsScreenState
   Widget _taskDescriptionCard() {
     return Container(
       padding: const EdgeInsets.all(14),
+      width: 1000,
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
         borderRadius: BorderRadius.circular(12),
@@ -211,8 +247,8 @@ class _InCompletedTaskDetailsScreenState
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
           ),
           SizedBox(height: 5),
-          const Text(
-            "Design and prepare a flex banner for the shop front including shop name, logo, contact details, and promotional content. Ensure proper layout, readability, and size as per requirement.",
+           Text(
+            description != null ? description! : 'no description'
           ),
         ],
       ),
@@ -221,16 +257,16 @@ class _InCompletedTaskDetailsScreenState
 
   Widget _departmentRow() {
     return Row(
-      children: const [
-        CircleAvatar(
+      children: [
+        const CircleAvatar(
           radius: 18,
           backgroundColor: Colors.blueAccent,
           child: Icon(Icons.work, color: Colors.white, size: 18),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Text(
-          "DEPARTMENT\nDesigning",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "DEPARTMENT\n${department!}",
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -248,13 +284,13 @@ class _InCompletedTaskDetailsScreenState
         children: [
           const Icon(Icons.calendar_today, color: Colors.red),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              "Apr 04, 2023 • 04:00 PM",
-              style: TextStyle(color: Colors.red),
+              DateFormat('MMMM d,y . hh:mma').format(deadline!),
+              style: const TextStyle(color: Colors.red),
             ),
           ),
-          Container(
+          if(deadline!.isBefore(DateTime.now())) Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.red,

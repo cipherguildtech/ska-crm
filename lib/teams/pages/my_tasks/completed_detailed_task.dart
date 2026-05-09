@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
+class CompletedTaskDetailsScreen extends StatefulWidget {
+  String taskId;
 
-class CompletedTaskDetailsScreen extends StatelessWidget {
-  const CompletedTaskDetailsScreen({super.key});
+
+  CompletedTaskDetailsScreen(
+      {
+        super.key,
+        required this.taskId
+      }
+      );
+  @override
+  State<CompletedTaskDetailsScreen> createState() => _CompletedTaskDetailsScreenState();
+}
+
+
+
+class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen> {
+ Future<void> fetchCompletedTasks() async {
+
+ }
 
   @override
   Widget build(BuildContext context) {
