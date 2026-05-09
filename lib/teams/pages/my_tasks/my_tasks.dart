@@ -140,7 +140,7 @@ class _TasksPageState extends State<TasksPage> {
 
                     // Error
                     if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(child: Text('something went wrong'));
                     }
                     completedTasks = snapshot.data!;
 
@@ -179,7 +179,7 @@ class _TasksPageState extends State<TasksPage> {
 
                     // Error
                     if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(child: Text('something went wrong'));
                     }
                     incompleteTasks = snapshot.data!;
                     return ListView.builder(

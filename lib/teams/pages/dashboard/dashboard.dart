@@ -7,6 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:ska_crm/utils/config.dart';
 import 'package:intl/intl.dart';
+
+import '../my_tasks/completed_detailed_task.dart';
+import '../my_tasks/in_completed_detailed_task.dart';
+
 dynamic totalTaskCount;
 dynamic pendingTaskCount;
 dynamic inProgressTaskCount;
@@ -16,7 +20,11 @@ dynamic inCompleteTaskCount;
 late Future<List<TaskCard>> activeTasksFuture;
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  final Function(int) switchPage;
+  const Dashboard({
+    super.key,
+    required this.switchPage
+  });
   @override
   State<Dashboard> createState() => _DashboardState();
 }
@@ -67,26 +75,31 @@ class _DashboardState extends State<Dashboard> {
     if(response.statusCode == 200) {
       List<dynamic>  activeTasks = jsonDecode(response.body);
       List<TaskCard> activeTaskWidgets = [
-        TaskCard(id: activeTasks[0]['project']['project_code'],
+        TaskCard(
+                 taskId: activeTasks[0]['id'],
+                 id: activeTasks[0]['project']['project_code'],
                  title: activeTasks[0]['title'],
                  status: activeTasks[0]['status'],
                  deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
                  isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
         ),
-        TaskCard(id: activeTasks[1]['project']['project_code'],
+        TaskCard(
+            taskId: activeTasks[1]['id'],
+            id: activeTasks[1]['project']['project_code'],
             title: activeTasks[1]['title'],
             status: activeTasks[1]['status'],
             deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
             isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
         ),
-        TaskCard(id: activeTasks[2]['project']['project_code'],
+        TaskCard(
+            taskId: activeTasks[2]['id'],
+            id: activeTasks[2]['project']['project_code'],
             title: activeTasks[2]['title'],
             status: activeTasks[2]['status'],
             deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
             isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
         )
       ];
-      print(activeTaskWidgets);
       return activeTaskWidgets;
     }
     else {
@@ -156,29 +169,6 @@ class _DashboardState extends State<Dashboard> {
                   );
                 }
             ),
-            /*TaskCard(
-              id: "SKA-7721",
-              title: "Shop Flex Banner Design",
-              status: "In Progress",
-              deadline: "Today, 4:00 AM",
-              isDelayed: false,
-            ),
-            TaskCard(
-              id: "SKA-7690",
-              title: "Poster Design",
-              status: "Pending",
-              deadline: "Yesterday, 5:00 PM",
-              isDelayed: true,
-            ),
-            TaskCard(
-              id: "SKA-7804",
-              title: "Material Quality Check",
-              status: "Pending",
-              deadline: "Apr 26, 11:00 AM",
-              isDelayed: false,
-            ),
-            */
-
             const SizedBox(height: 10),
             const Text(
               "UPDATED 2 MINS AGO • HIGH CONTRAST MODE ACTIVE",
@@ -259,7 +249,7 @@ class _DashboardState extends State<Dashboard> {
           const Spacer(),
           TextButton(
             onPressed: () {
-
+              widget.switchPage(1);
             },
             child: const Text("View All", style: TextStyle(color: Colors.teal)),
           ),
@@ -316,6 +306,7 @@ class StatusCard extends StatelessWidget {
 }
 
 class TaskCard extends StatelessWidget {
+  final String taskId;
   final String id;
   final String title;
   final String status;
@@ -324,6 +315,7 @@ class TaskCard extends StatelessWidget {
 
   const TaskCard({
     super.key,
+    required this.taskId,
     required this.id,
     required this.title,
     required this.status,
@@ -333,19 +325,36 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+    return InkWell(
+        onTap: () {
+          if (status.toUpperCase() != "COMPLETED") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId)),
+            );
+          }
+          if (status.toUpperCase() == "COMPLETED") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => CompletedTaskDetailsScreen(taskId: taskId,)),
+            );
+          }
+        },
+        child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+         ),
+         child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Chip(
+                Row(
+               children: [
+                  Chip(
                 label: Text("ID: $id"),
                 backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -406,6 +415,7 @@ class TaskCard extends StatelessWidget {
           ),
         ],
       ),
+    )
     );
   }
 }
