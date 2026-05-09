@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -24,6 +26,7 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
 
   Future<List<TaskCard>> fetchCompletedTasks() async{
@@ -105,6 +108,17 @@ class _TasksPageState extends State<TasksPage> {
         completedTasksFuture = fetchCompletedTasks();
         incompleteTasksFuture = fetchInCompleteTasks();
       });
+      _connectivitySubscription = Connectivity()
+          .onConnectivityChanged
+          .listen((List<ConnectivityResult> results) {
+        final hasInternet = results.any((r) => r != ConnectivityResult.none);
+        if (hasInternet) {
+          setState(() {
+            completedTasksFuture = fetchInCompleteTasks();
+            incompleteTasksFuture = fetchInCompleteTasks();
+          });
+        }
+      });
     }
 
   }
@@ -141,35 +155,6 @@ class _TasksPageState extends State<TasksPage> {
                     );
                   }
               ),
-              /*TaskCard(
-              id: "SKA-2025-0042",
-              title: "Shop Flex Banner Design",
-              subtitle: "Design flex banner for Ravi Stores opening",
-              date: "Apr 24, 2026 • 01:00",
-              status: "Completed",
-            ),
-            TaskCard(
-              id: "SKA-2025-0045",
-              title: "LED Board Layout Design",
-              subtitle: "Create LED layout for showroom front",
-              date: "Apr 02, 2026 • 09:00",
-              status: "Completed",
-              isDelayed: true,
-            ),
-            TaskCard(
-              id: "SKA-2025-0048",
-              title: "Poster Design",
-              subtitle: "Design promotional poster for festival sale",
-              date: "Apr 28, 2026 • 01:30",
-              status: "Completed",
-            ),
-            TaskCard(
-              id: "SKA-2025-0051",
-              title: "Visiting Card Design",
-              subtitle: "Design visiting card for client ABC Traders",
-              date: "Oct 30, 2025 • 10:00",
-              status: "Completed",
-            ),*/
             ],
           ),
         ),
@@ -208,35 +193,7 @@ class _TasksPageState extends State<TasksPage> {
                     );
                   }
               ),
-              /*TaskCard(
-              id: "SKA-2025-0042",
-              title: "Shop Flex Banner Design",
-              subtitle: "Design flex banner for Ravi Stores opening",
-              date: "Apr 24, 2026 • 01:00",
-              status: "In Progress",
-            ),
-            TaskCard(
-              id: "SKA-2025-0045",
-              title: "LED Board Layout Design",
-              subtitle: "Create LED layout for showroom front",
-              date: "Apr 02, 2026 • 09:00",
-              status: "Pending",
-              isDelayed: true,
-            ),
-            TaskCard(
-              id: "SKA-2025-0048",
-              title: "Poster Design",
-              subtitle: "Design promotional poster for festival sale",
-              date: "Apr 28, 2026 • 01:30",
-              status: "Pending",
-            ),
-            TaskCard(
-              id: "SKA-2025-0051",
-              title: "Visiting Card Design",
-              subtitle: "Design visiting card for client ABC Traders",
-              date: "Oct 30, 2025 • 10:00",
-              status: "In Progress",
-            ),*/
+
             ],
           ),
         ),
@@ -382,7 +339,7 @@ class SectionHeaderInCompleted extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "INCOMPLETE TASKS (${incompleteTasksCount ?? '--'})",
+          "INCOMPLETE TASKS (${incompleteTasksCount ?? '-'})",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
@@ -414,7 +371,7 @@ class SectionHeaderCompleted extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "COMPLETED TASKS (${completedTasksCount ?? '--'})",
+          "COMPLETED TASKS (${completedTasksCount ?? '-'})",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1,

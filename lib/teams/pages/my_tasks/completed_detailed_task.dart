@@ -1,4 +1,10 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../services/taskDetail.dart';
 class CompletedTaskDetailsScreen extends StatefulWidget {
   String taskId;
 
@@ -16,12 +22,59 @@ class CompletedTaskDetailsScreen extends StatefulWidget {
 
 
 class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen> {
- Future<void> fetchCompletedTasks() async {
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  final taskDetailService = TaskDetailService();
+  String? projectCode;
+  String? taskTitle;
+  DateTime? deadline;
+  String? department;
+  String? description;
+  String? workDetails;
+  Future<void> getTaskDetail() async {
+    Map<dynamic, dynamic>? completedTaskDetail = await taskDetailService.fetchTask(widget.taskId);
+    print(completedTaskDetail);
+    if(completedTaskDetail != null){
+      setState(() {
+        projectCode = completedTaskDetail['project']['project_code'];
+        taskTitle = completedTaskDetail['title'];
+        deadline = DateTime.parse(completedTaskDetail['due_at']);
+        department = completedTaskDetail['department'];
+        description = completedTaskDetail['description'];
+        workDetails = completedTaskDetail['work_details'];
+      });
+    }
+    else {
 
- }
+    }
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTaskDetail();
+
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      final hasInternet = results.any((r) => r != ConnectivityResult.none);
+      if (hasInternet) {
+        setState(() {
+          getTaskDetail();
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (projectCode == null || taskTitle == null || deadline == null || department == null ) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F6F8),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
@@ -36,14 +89,14 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              "SKA-2025-0042",
-              style: TextStyle(fontSize: 12, color: Colors.teal),
+              projectCode!,
+              style: const TextStyle(fontSize: 12, color: Colors.teal),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
-              "Shop Flex Banner Design",
+              taskTitle!,
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
           ],
@@ -76,8 +129,8 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 10),
-                  const Text(
-                    "Design and prepare a flex banner for the shop front including shop name, logo, contact details, and promotional content. Ensure proper layout, readability, and size as per requirement.",
+                   Text(
+                    description ?? 'no description',
                     style: TextStyle(fontSize: 14),
                   ),
                 ],
@@ -96,23 +149,23 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
               child: Column(
                 children: [
                   Row(
-                    children: const [
-                      CircleAvatar(
+                    children: [
+                      const CircleAvatar(
                         radius: 18,
                         backgroundColor: Color(0xFFE8F1FF),
                         child: Icon(Icons.work, color: Colors.blue),
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "DEPARTMENT",
                             style: TextStyle(fontSize: 15, color: Colors.grey),
                           ),
                           Text(
-                            "Designing",
-                            style: TextStyle(
+                            department!,
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -129,17 +182,17 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      children: const [
-                        CircleAvatar(
+                      children: [
+                        const CircleAvatar(
                           radius: 18,
                           backgroundColor: Color(0xFFE0F7F6),
                           child: Icon(Icons.calendar_today, color: Colors.teal),
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               "DEADLINE",
                               style: TextStyle(
                                 fontSize: 15,
@@ -147,8 +200,8 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
                               ),
                             ),
                             Text(
-                              "Apr 04, 2023 • 04:00 PM",
-                              style: TextStyle(
+                              DateFormat('MMMM d,y . hh:mma').format(deadline!),
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.teal,
                                 fontWeight: FontWeight.w600,
@@ -179,8 +232,8 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: const Text(
-                "Designed banner with logo, contact details, and promotional offer.\nUsed red and yellow theme as requested.",
+              child:  Text(
+                 workDetails ?? 'no work details',
                 style: TextStyle(fontSize: 14),
               ),
             ),

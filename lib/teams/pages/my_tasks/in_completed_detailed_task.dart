@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import './../../services/taskDetail.dart';
+import '../../services/taskDetail.dart';
+
 
 String? projectCode;
 String? taskTitle;
@@ -22,8 +25,22 @@ class InCompletedTaskDetailsScreen extends StatefulWidget {
 
 
 class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScreen> {
-
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  final taskDetailService = TaskDetailService();
   Future<void> getTaskDetail() async {
+    Map<dynamic, dynamic>? inCompleteTaskDetail = await taskDetailService.fetchTask(widget.taskId);
+    if(inCompleteTaskDetail != null){
+      setState(() {
+        projectCode = inCompleteTaskDetail['project']['project_code'];
+        taskTitle = inCompleteTaskDetail['title'];
+        deadline = DateTime.parse(inCompleteTaskDetail['due_at']);
+        department = inCompleteTaskDetail['department'];
+        description = inCompleteTaskDetail['description'];
+      });
+    }
+    else {
+
+    }
 
   }
 
@@ -47,7 +64,17 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
   @override
   void initState() {
     super.initState();
-    fetchTask();
+    getTaskDetail();
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      final hasInternet = results.any((r) => r != ConnectivityResult.none);
+      if (hasInternet) {
+        setState(() {
+          getTaskDetail();
+        });
+      }
+    });
   }
 
   @override
@@ -430,7 +457,9 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+
+        },
         icon: const Icon(Icons.check_circle_outline, color: Colors.white),
         label: const Text(
           "Mark as Completed",

@@ -7,8 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:ska_crm/utils/config.dart';
 import 'package:intl/intl.dart';
-import '../my_tasks/my_tasks.dart';
-
 dynamic totalTaskCount;
 dynamic pendingTaskCount;
 dynamic inProgressTaskCount;
