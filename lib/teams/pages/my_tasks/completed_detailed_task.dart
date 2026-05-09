@@ -30,6 +30,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
   String? department;
   String? description;
   String? workDetails;
+  String? files;
   Future<void> getTaskDetail() async {
     Map<dynamic, dynamic>? completedTaskDetail = await taskDetailService.fetchTask(widget.taskId);
     print(completedTaskDetail);
@@ -41,6 +42,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
         department = completedTaskDetail['department'];
         description = completedTaskDetail['description'];
         workDetails = completedTaskDetail['work_details'];
+        files = completedTaskDetail['files'];
       });
     }
     else {

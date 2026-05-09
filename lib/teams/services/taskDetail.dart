@@ -22,4 +22,26 @@ class TaskDetailService {
 
   }
 
+  Future<bool> completeTask(String id) async {
+    final url = Uri.parse('$baseUrl/tasks/update_status/$id/COMPLETED/${(DateTime.now()).toString()}');
+    final response = await http.put(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    if (response.statusCode == 200) {
+      Map<dynamic, dynamic>? Task = jsonDecode(response.body);
+      if(Task != null) {
+        return true;
+      }
+      else{
+        return false;
+      }
+    }
+    else {
+      return false;
+    }
+  }
+
 }

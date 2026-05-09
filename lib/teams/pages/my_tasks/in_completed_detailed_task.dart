@@ -27,6 +27,8 @@ class InCompletedTaskDetailsScreen extends StatefulWidget {
 class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScreen> {
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final taskDetailService = TaskDetailService();
+
+
   Future<void> getTaskDetail() async {
     Map<dynamic, dynamic>? inCompleteTaskDetail = await taskDetailService.fetchTask(widget.taskId);
     if(inCompleteTaskDetail != null){
@@ -42,6 +44,10 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
 
     }
 
+  }
+
+  Future<void> completeTask(String taskId) async {
+    bool result = await taskDetailService.completeTask(taskId);
   }
 
 
@@ -458,7 +464,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () {
-
+          completeTask(widget.taskId);
         },
         icon: const Icon(Icons.check_circle_outline, color: Colors.white),
         label: const Text(
