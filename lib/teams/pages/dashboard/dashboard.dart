@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:ska_crm/utils/config.dart';
+import 'package:intl/intl.dart';
 
 int totalTaskCount = 0;
 int pendingTaskCount = 0;
@@ -12,6 +14,7 @@ int inProgressTaskCount = 0;
 int completedTaskCount = 0;
 int delayedTaskCount = 0;
 int inCompleteTaskCount = 0;
+late Future<List<TaskCard>> activeTasksFuture;
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -20,6 +23,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+
   Future<void> loadCount() async {
     final pref = await SharedPreferences.getInstance();
     final phone = pref.get('phone');
@@ -47,13 +51,56 @@ class _DashboardState extends State<Dashboard> {
     else {
 
     }
-
   }
+
+  Future<List<TaskCard>> fetchActiveTasks() async {
+    final pref = await SharedPreferences.getInstance();
+    final phone = pref.get('phone');
+    final url = Uri.parse('$baseUrl/users/team/active_tasks/$phone');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    print(response.statusCode);
+    if(response.statusCode == 200) {
+      List<dynamic>  activeTasks = jsonDecode(response.body);
+      List<TaskCard> activeTaskWidgets = [
+        TaskCard(id: activeTasks[0]['project']['project_code'],
+                 title: activeTasks[0]['title'],
+                 status: activeTasks[0]['status'],
+                 deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
+                 isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
+        ),
+        TaskCard(id: activeTasks[1]['project']['project_code'],
+            title: activeTasks[1]['title'],
+            status: activeTasks[1]['status'],
+            deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
+            isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
+        ),
+        TaskCard(id: activeTasks[2]['project']['project_code'],
+            title: activeTasks[2]['title'],
+            status: activeTasks[2]['status'],
+            deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
+            isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
+        )
+      ];
+      print(activeTaskWidgets);
+      return activeTaskWidgets;
+    }
+    else {
+      return [];
+    }
+}
 
   @override
   void initState() {
     super.initState();
     loadCount();
+    setState(() {
+      activeTasksFuture = fetchActiveTasks();
+    });
   }
   @override
   Widget build(BuildContext context) {
@@ -68,8 +115,30 @@ class _DashboardState extends State<Dashboard> {
             const SizedBox(height: 16),
             _buildActiveTasksHeader(),
             const SizedBox(height: 10),
+            FutureBuilder<List<TaskCard>>(
+                future: activeTasksFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
-            TaskCard(
+                  // Error
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  final activeTasks = snapshot.data!;
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: activeTasks.length,
+                      itemBuilder: (context, index) {
+                        final activeTask = activeTasks[index];
+                        return activeTask;
+                      }
+                  );
+                }
+            ),
+            /*TaskCard(
               id: "SKA-7721",
               title: "Shop Flex Banner Design",
               status: "In Progress",
@@ -90,6 +159,7 @@ class _DashboardState extends State<Dashboard> {
               deadline: "Apr 26, 11:00 AM",
               isDelayed: false,
             ),
+            */
 
             const SizedBox(height: 10),
             const Text(
@@ -114,7 +184,7 @@ class _DashboardState extends State<Dashboard> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Text(
-            "Shree Krishna Ads • April 05, 2026",
+            "Shree Krishna Ads • ${DateFormat('MMMM d, y').format(DateTime.now())} ",
             style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 10),
