@@ -53,7 +53,7 @@ class _TasksPageState extends State<TasksPage> {
           title: task['title'],
           subtitle: task['description'] ?? 'no description',
           id: task['project']['project_code'],
-          date: DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
+          date: task['status'] == 'COMPLETED' ? DateFormat('MMMM d, y').format(DateTime.parse(task['completed_at'])) : DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
           status: task['status'],
           isDelayed: DateTime.parse(task['due_at']).isBefore(DateTime.now()),
         ));
@@ -88,7 +88,7 @@ class _TasksPageState extends State<TasksPage> {
           title: task['title'],
           subtitle: task['description'] ?? 'no description',
           id: task['project']['project_code'],
-          date: task['status'] == 'COMPLETED' ? DateFormat('MMMM d, y').format(DateTime.parse(task['completed_at'])) : DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
+          date: DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
           status: task['status'],
           isDelayed: DateTime.parse(task['due_at']).isBefore(DateTime.now()),
         ));

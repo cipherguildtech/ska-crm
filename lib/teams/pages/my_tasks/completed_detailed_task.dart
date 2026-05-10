@@ -30,7 +30,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
   String? department;
   String? description;
   String? workDetails;
-  String? files;
+  List<dynamic>? files;
   Future<void> getTaskDetail() async {
     Map<dynamic, dynamic>? completedTaskDetail = await taskDetailService.fetchTask(widget.taskId);
     print(completedTaskDetail);
@@ -250,6 +250,23 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
             const SizedBox(height: 10),
 
             Row(
+              children: (files ?? []).map((url) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      url,
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            /*Row(
               children: [
                 // Image attachment
                 ClipRRect(
@@ -279,7 +296,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
                   ),
                 ),
               ],
-            ),
+            ),*/
           ],
         ),
       ),

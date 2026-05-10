@@ -34,63 +34,71 @@ class TaskDetailService {
     final url2 = Uri.parse('$baseUrl/tasks/update/$id');
     final url3 = Uri.parse('$baseUrl/project-history/create');
     final url4 = Uri.parse('$baseUrl/tasks/save_files/$id');
-    final response1 = await http.put(
-      url1,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
-
-    final response2 = await http.put(
-        url2,
+    try {
+      final response1 = await http.put(
+        url1,
         headers: {
           "Content-Type": "application/json",
         },
-        body: jsonEncode(
-        {
-          'updated_at': DateTime.now().toString(),
-          'work_details': workDetail,
-          'notes_work': delayReason,
-        }
-      )
-    );
+      );
 
-    final response3 = await http.post(
-      url3,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: jsonEncode(
-        {
-          'task_id': id,
-          'project_id': projectId,
-          'changed_by': changedBy,
-          'task_old_status': oldStatus,
-          'task_new_status': status,
-          'detail': {
-            'reason': status == 'COMPLETED' ? 'completed': 'in_progress',
-            'work_detail': workDetail
+      final response2 = await http.put(
+          url2,
+          headers: {
+            "Content-Type": "application/json",
           },
-          'changed_at': DateTime.now().toString(),
-        }
-      )
-    );
-    final response4 = await http.post(
-      url4,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: jsonEncode(
-        {
-          'images': base64Images.isEmpty ? null: base64Images
-        }
-      )
-    );
-    print(response4.statusCode);
-    if (response1.statusCode == 200 && response2.statusCode == 200 && response3.statusCode == 201 && response4.statusCode == 201) {
-      return true;
+          body: jsonEncode(
+              {
+                'work_details': workDetail,
+                'notes_work': delayReason,
+              }
+          )
+      );
+
+      final response3 = await http.post(
+          url3,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: jsonEncode(
+              {
+                'task_id': id,
+                'project_id': projectId,
+                'changed_by': changedBy,
+                'task_old_status': oldStatus,
+                'task_new_status': status,
+                'detail': {
+                  'reason': status == 'COMPLETED' ? 'completed' : 'in_progress',
+                  'work_details': workDetail
+                },
+              }
+          )
+      );
+
+      final response4 = await http.post(
+          url4,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: jsonEncode(
+              {
+                'images': base64Images.isEmpty ? null : base64Images
+              }
+          )
+      );
+
+
+      print(response4.statusCode);
+      if (response1.statusCode == 200 && response2.statusCode == 200 &&
+          response3.statusCode == 201 && response4.statusCode == 201) {
+        return true;
+      }
+      else {
+        return false;
+      }
     }
-    else {
+    catch(e) {
+      print(e);
       return false;
     }
 

@@ -495,9 +495,9 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
           }
         },
         icon: const Icon(Icons.play_circle_outline, color: Colors.teal),
-        label: const Text(
-          "Start Work",
-          style: TextStyle(
+        label: Text(
+          oldStatus == 'IN_PROGRESS'? "Submit" : "Start Work",
+          style: const TextStyle(
             color: Colors.teal,
             fontSize: 16,
             fontWeight: FontWeight.bold,
