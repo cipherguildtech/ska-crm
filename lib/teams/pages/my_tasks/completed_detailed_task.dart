@@ -26,7 +26,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
   final taskDetailService = TaskDetailService();
   String? projectCode;
   String? taskTitle;
-  DateTime? deadline;
+  DateTime? completedAt;
   String? department;
   String? description;
   String? workDetails;
@@ -38,7 +38,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
       setState(() {
         projectCode = completedTaskDetail['project']['project_code'];
         taskTitle = completedTaskDetail['title'];
-        deadline = DateTime.parse(completedTaskDetail['due_at']);
+        completedAt = DateTime.parse(completedTaskDetail['completed_at']);
         department = completedTaskDetail['department'];
         description = completedTaskDetail['description'];
         workDetails = completedTaskDetail['work_details'];
@@ -70,7 +70,7 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (projectCode == null || taskTitle == null || deadline == null || department == null ) {
+    if (projectCode == null || taskTitle == null || completedAt == null || department == null ) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F6F8),
         body: Center(child: CircularProgressIndicator()),
@@ -195,14 +195,14 @@ class _CompletedTaskDetailsScreenState extends State<CompletedTaskDetailsScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "DEADLINE",
+                              "COMPLETED AT",
                               style: TextStyle(
                                 fontSize: 15,
                                 color: Colors.grey,
                               ),
                             ),
                             Text(
-                              DateFormat('MMMM d,y . hh:mma').format(deadline!),
+                              DateFormat('MMMM d,y . hh:mma').format(completedAt!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.teal,

@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ska_crm/teams/pages/dashboard/dashboard.dart';
 import '../../../provider/provider.dart';
 import '../../../utils/config.dart';
 import 'completed_detailed_task.dart';
@@ -49,6 +48,7 @@ class _TasksPageState extends State<TasksPage> {
       //print(completedTasks);
       List<TaskCard> completedTaskWidgets = completedTasks.map((task) {
         return (TaskCard(
+
           taskId: task['id'],
           title: task['title'],
           subtitle: task['description'] ?? 'no description',
@@ -88,7 +88,7 @@ class _TasksPageState extends State<TasksPage> {
           title: task['title'],
           subtitle: task['description'] ?? 'no description',
           id: task['project']['project_code'],
-          date: DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
+          date: task['status'] == 'COMPLETED' ? DateFormat('MMMM d, y').format(DateTime.parse(task['completed_at'])) : DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
           status: task['status'],
           isDelayed: DateTime.parse(task['due_at']).isBefore(DateTime.now()),
         ));
@@ -421,7 +421,7 @@ class TaskCard extends StatelessWidget {
         if (status.toUpperCase() != "COMPLETED") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId)),
+            MaterialPageRoute(builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId, myTasksScreenContext: context,)),
           );
         }
         if (status.toUpperCase() == "COMPLETED") {
@@ -451,7 +451,7 @@ class TaskCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (isDelayed)
+                if (isDelayed && status != 'COMPLETED')
                   Row(
                     children: [
                       Icon(Icons.info_outline, color: Colors.red, size: 15),
@@ -475,7 +475,7 @@ class TaskCard extends StatelessWidget {
             const Divider(height: 20),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                Icon(status == 'COMPLETED' ? Icons.check_circle_outline :Icons.access_time, size: 16, color: Colors.grey),
                 const SizedBox(width: 6),
                 Text(date, style: const TextStyle(color: Colors.grey)),
                 const Spacer(),

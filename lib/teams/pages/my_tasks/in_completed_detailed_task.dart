@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:ska_crm/teams/pages/my_tasks/completed_detailed_task.dart';
 import '../../services/taskDetail.dart';
 
 
@@ -12,12 +13,17 @@ String? taskTitle;
 DateTime? deadline;
 String? department;
 String? description;
+String? projectId;
+String? oldStatus;
+String? userPhone;
 
 class InCompletedTaskDetailsScreen extends StatefulWidget {
    String taskId;
+   BuildContext myTasksScreenContext;
    InCompletedTaskDetailsScreen({
      super.key,
-     required this.taskId
+     required this.taskId,
+     required this.myTasksScreenContext
    });
   @override
   State<InCompletedTaskDetailsScreen> createState() => _InCompletedTaskDetailsScreenState();
@@ -27,6 +33,9 @@ class InCompletedTaskDetailsScreen extends StatefulWidget {
 class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScreen> {
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final taskDetailService = TaskDetailService();
+  final TextEditingController delayReasonController = TextEditingController();
+  final TextEditingController currentWorkProgressController = TextEditingController();
+  List<File> images = [];
 
 
   Future<void> getTaskDetail() async {
@@ -34,10 +43,13 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     if(inCompleteTaskDetail != null){
       setState(() {
         projectCode = inCompleteTaskDetail['project']['project_code'];
+        projectId = inCompleteTaskDetail['project']['id'];
         taskTitle = inCompleteTaskDetail['title'];
         deadline = DateTime.parse(inCompleteTaskDetail['due_at']);
         department = inCompleteTaskDetail['department'];
         description = inCompleteTaskDetail['description'];
+        oldStatus = inCompleteTaskDetail['status'];
+        userPhone = inCompleteTaskDetail['assignee']['phone'];
       });
     }
     else {
@@ -46,14 +58,51 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
 
   }
 
-  Future<void> completeTask(String taskId) async {
-    bool result = await taskDetailService.completeTask(taskId);
+  Future<bool?> completeTask(String taskId) async {
+    if(deadline!.isBefore(DateTime.now())){
+      if(currentWorkProgressController.text.isNotEmpty && delayReasonController.text.isNotEmpty) {
+        bool result = await taskDetailService.changeTaskStatus(taskId,'COMPLETED',currentWorkProgressController.text, delayReasonController.text, projectId!, userPhone!,oldStatus!, images);
+        return result;
+      }
+      else {
+        return null;
+      }
+    }
+    else {
+      if(currentWorkProgressController.text.isNotEmpty) {
+        bool result = await taskDetailService.changeTaskStatus(taskId,'COMPLETED',currentWorkProgressController.text, null, projectId!, userPhone!,oldStatus!, images);
+        return result;
+      }
+      else {
+        return null;
+      }
+    }
+  }
+
+  Future<bool?> progressTask(String taskId) async {
+    if(deadline!.isBefore(DateTime.now())){
+      if(currentWorkProgressController.text.isNotEmpty && delayReasonController.text.isNotEmpty) {
+        bool result = await taskDetailService.changeTaskStatus(taskId,'IN_PROGRESS',currentWorkProgressController.text, delayReasonController.text, projectId!, userPhone!,oldStatus!, images);
+        return result;
+      }
+      else {
+        return null;
+      }
+    }
+    else {
+      if(currentWorkProgressController.text.isNotEmpty) {
+        bool result = await taskDetailService.changeTaskStatus(taskId,'IN_PROGRESS',currentWorkProgressController.text, null, projectId!, userPhone!,oldStatus!, images);
+        return result;
+      }
+      else {
+        return null;
+      }
+    }
   }
 
 
 
   final ImagePicker _picker = ImagePicker();
-  List<File> images = [];
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(
@@ -188,7 +237,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
                     Text("*", style: TextStyle(color: Colors.red)),
                   ],
                 ),
-                _textField("Explain why the task is delayed..."),
+                _textField("Explain why the task is delayed...", delayReasonController),
                 Text(
                   "Tip: Mention if you are waiting for materials or client approval.",
                   style: TextStyle(color: Colors.grey.shade800, fontSize: 13),
@@ -198,7 +247,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
 
             const SizedBox(height: 16),
             _sectionTitle("Work Details / Progress"),
-            _textField("Enter current work progress..."),
+            _textField("Enter current work progress...", currentWorkProgressController),
 
             const SizedBox(height: 16),
             const Text(
@@ -213,7 +262,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
             _startButton(),
 
             const SizedBox(height: 12),
-            _completeButton(),
+            _completeButton(context, widget.taskId),
           ],
         ),
       ),
@@ -343,10 +392,11 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     return Text(title, style: const TextStyle(fontWeight: FontWeight.bold));
   }
 
-  Widget _textField(String hint) {
+  Widget _textField(String hint,TextEditingController controller) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       child: TextField(
+        controller: controller,
         maxLines: 4,
         decoration: InputDecoration(
           hintText: hint,
@@ -438,7 +488,12 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: () async {
+          final bool? res = await progressTask(widget.taskId);
+          if(res == true) {
+
+          }
+        },
         icon: const Icon(Icons.play_circle_outline, color: Colors.teal),
         label: const Text(
           "Start Work",
@@ -459,12 +514,20 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     );
   }
 
-  Widget _completeButton() {
+  Widget _completeButton(BuildContext screenContext, String taskId) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {
-          completeTask(widget.taskId);
+        onPressed: () async{
+          final bool? res = await completeTask(widget.taskId);
+          if(res == true ) {
+            print('done');
+            if(mounted) {
+              Navigator.push(screenContext, MaterialPageRoute(
+                  builder: (_) => CompletedTaskDetailsScreen(taskId: taskId)
+              ));
+            }
+          }
         },
         icon: const Icon(Icons.check_circle_outline, color: Colors.white),
         label: const Text(

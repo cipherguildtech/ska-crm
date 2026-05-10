@@ -331,7 +331,7 @@ class TaskCard extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId)),
+                  builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId, myTasksScreenContext: context,)),
             );
           }
           if (status.toUpperCase() == "COMPLETED") {
