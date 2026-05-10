@@ -16,6 +16,7 @@ String? description;
 String? projectId;
 String? oldStatus;
 String? userPhone;
+bool isDisable = false;
 
 class InCompletedTaskDetailsScreen extends StatefulWidget {
    String taskId;
@@ -262,7 +263,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
             _startButton(),
 
             const SizedBox(height: 12),
-            _completeButton(context, widget.taskId),
+            _completeButton(widget.myTasksScreenContext, widget.taskId),
           ],
         ),
       ),
@@ -397,6 +398,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
       margin: const EdgeInsets.only(top: 8),
       child: TextField(
         controller: controller,
+        enabled: isDisable,
         maxLines: 4,
         decoration: InputDecoration(
           hintText: hint,
@@ -471,7 +473,8 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
 
   Widget _addBox() {
     return InkWell(
-      onTap: _pickImage,
+
+      onTap: isDisable ? null : _pickImage,
       child: Container(
         width: 80,
         height: 80,
@@ -488,10 +491,17 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () async {
+        onPressed: isDisable ? null :() async {
           final bool? res = await progressTask(widget.taskId);
-          if(res == true) {
-
+          if(res == null) {
+            Center(
+              child: Text('Enter the fields before submitting'),
+            );
+          }
+          else {
+            if(res == true) {
+              initState();
+            }
           }
         },
         icon: const Icon(Icons.play_circle_outline, color: Colors.teal),
@@ -518,16 +528,28 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () async{
+        onPressed: isDisable ? null : () async{
           final bool? res = await completeTask(widget.taskId);
-          if(res == true ) {
+          if(res == null) {
+            Center(
+              child: Text('Enter the fields before submitting'),
+            );
+          }
+          else {
+            if(res == true) {
+              setState(() {
+                isDisable = true;
+              });
+            }
+          }
+          /*if(res == true ) {
             print('done');
             if(mounted) {
               Navigator.push(screenContext, MaterialPageRoute(
                   builder: (_) => CompletedTaskDetailsScreen(taskId: taskId)
               ));
-            }
-          }
+
+          }*/
         },
         icon: const Icon(Icons.check_circle_outline, color: Colors.white),
         label: const Text(

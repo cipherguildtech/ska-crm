@@ -152,11 +152,12 @@ class _DashboardState extends State<Dashboard> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
-
-                  // Error
-                  if (snapshot.hasError) {
-                    return Center(child: Text('something went wrong'));
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Text('No active tasks', style: TextStyle(color: Colors.grey,fontSize: 25)),
+                    );
                   }
+                  // Error
                   final activeTasks = snapshot.data!;
                   return ListView.builder(
                       shrinkWrap: true,
