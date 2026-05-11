@@ -1,21 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:ska_crm/sales/pages/projects/project_details.dart';
+
+import '../../sales_service.dart';
 import 'add_project.dart';
 
 class Project {
   final String id;
+  final String projectCode;
   final String title;
   final String subtitle;
-  final DateTime date;
+  final DateTime deadline;
   final String status;
 
   Project({
-    required this.id,
+    required this.projectCode,
     required this.title,
     required this.subtitle,
-    required this.date,
+    required this.deadline,
     required this.status,
+    required this.id,
   });
+
+  factory Project.fromJson(Map<String, dynamic> json) {
+    return Project(
+      id: json["id"] ?? "",
+      projectCode: json["project_code"] ?? "",
+      title: json["customer"]?["name"] ?? "Unknown Customer",
+      subtitle: json["description"] ?? "",
+      deadline: DateTime.tryParse(json["deadline"] ?? "") ?? DateTime.now(),
+      status: json["status"] ?? "PENDING",
+    );
+  }
 }
 
 class ProjectsPage extends StatefulWidget {
@@ -26,37 +41,11 @@ class ProjectsPage extends StatefulWidget {
 }
 
 class _ProjectsPageState extends State<ProjectsPage> {
-  final List<Project> allProjects = [
-    Project(
-      id: "SKA-2025-0042",
-      title: "Nexus Cloud Solutions",
-      subtitle: "Infrastructure Upgrade",
-      date: DateTime(2025, 10, 12),
-      status: "Active",
-    ),
-    Project(
-      id: "SKA-2025-0038",
-      title: "Horizon Retail Group",
-      subtitle: "E-commerce Integration",
-      date: DateTime(2025, 9, 28),
-      status: "Pending Approval",
-    ),
-    Project(
-      id: "SKA-2025-0029",
-      title: "GreenLeaf Organics",
-      subtitle: "Sustainability Audit",
-      date: DateTime(2025, 11, 5),
-      status: "Active",
-    ),
-    Project(
-      id: "SKA-2025-0021",
-      title: "Urban Mobility Inc",
-      subtitle: "Fleet Management System",
-      date: DateTime(2025, 10, 30),
-      status: "Active",
-    ),
-  ];
+  final SalesService salesService = SalesService();
 
+  bool isLoading = true;
+
+  List<Project> allProjects = [];
   List<Project> filteredProjects = [];
 
   String selectedFilter = "All";
@@ -66,30 +55,48 @@ class _ProjectsPageState extends State<ProjectsPage> {
   @override
   void initState() {
     super.initState();
-    filteredProjects = [...allProjects];
-    applyAll();
+    init();
+  }
+
+  Future<void> init() async {
+    try {
+      final response = await salesService.fetchAllProjects();
+
+      allProjects = (response).map((e) => Project.fromJson(e)).toList();
+
+      applyAll();
+    } catch (e) {
+      debugPrint("Error loading projects: $e");
+    }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void applyAll() {
     List<Project> temp = [...allProjects];
 
-    // 🔍 SEARCH
+    /// SEARCH
     if (searchQuery.isNotEmpty) {
       temp = temp.where((p) {
         return p.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            p.id.toLowerCase().contains(searchQuery.toLowerCase());
+            p.projectCode.toLowerCase().contains(searchQuery.toLowerCase());
       }).toList();
     }
 
-    // 🎯 FILTER
+    /// FILTER
     if (selectedFilter != "All") {
-      temp = temp.where((p) => p.status == selectedFilter).toList();
+      temp = temp.where((p) {
+        return p.status.toLowerCase() == selectedFilter.toLowerCase();
+      }).toList();
     }
 
-    // 📅 SORT
+    /// SORT
     temp.sort(
-      (a, b) =>
-          sortNewestFirst ? b.date.compareTo(a.date) : a.date.compareTo(b.date),
+      (a, b) => sortNewestFirst
+          ? b.deadline.compareTo(a.deadline)
+          : a.deadline.compareTo(b.deadline),
     );
 
     setState(() {
@@ -97,60 +104,78 @@ class _ProjectsPageState extends State<ProjectsPage> {
     });
   }
 
+  String formatStatus(String status) {
+    return status.replaceAll("_", " ");
+  }
+
+  String _monthName(int month) {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    return months[month - 1];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      body: Column(
-        children: [
-          _buildSearch(),
-          _buildFilters(),
-          const SizedBox(height: 10),
 
-          /// 📋 LIST
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredProjects.length + 2,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return SectionHeader(
-                    onSort: () {
-                      setState(() {
-                        sortNewestFirst = !sortNewestFirst;
-                        applyAll();
-                      });
-                    },
-                  );
-                }
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                _buildSearch(),
+                _buildFilters(),
+                const SizedBox(height: 10),
 
-                if (index == filteredProjects.length + 1) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(
-                      child: Text(
-                        "Load older projects",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  );
-                }
+                Expanded(
+                  child: filteredProjects.isEmpty
+                      ? const Center(child: Text("No projects found"))
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: filteredProjects.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return SectionHeader(
+                                onSort: () {
+                                  setState(() {
+                                    sortNewestFirst = !sortNewestFirst;
+                                  });
 
-                final p = filteredProjects[index - 1];
+                                  applyAll();
+                                },
+                              );
+                            }
 
-                return ProjectCard(
-                  id: p.id,
-                  title: p.title,
-                  subtitle: p.subtitle,
-                  date:
-                      "${_monthName(p.date.month)} ${p.date.day}, ${p.date.year}",
-                  status: p.status,
-                );
-              },
+                            final p = filteredProjects[index - 1];
+
+                            return ProjectCard(
+                              id: p.id,
+                              code: p.projectCode,
+                              title: p.title,
+                              subtitle: p.subtitle,
+                              date:
+                                  "${_monthName(p.deadline.month)} ${p.deadline.day}, ${p.deadline.year}",
+                              status: formatStatus(p.status),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF00A8A8),
         child: const Icon(Icons.add, color: Colors.white),
@@ -164,7 +189,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  /// 🔍 SEARCH
   Widget _buildSearch() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -188,16 +212,19 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  /// 🎯 FILTER
   Widget _buildFilters() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          _filterChip("All"),
-          _filterChip("Active"),
-          _filterChip("Pending Approval"),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _filterChip("All"),
+            _filterChip("IN_PROGRESS"),
+            _filterChip("COMPLETED"),
+            _filterChip("PENDING"),
+          ],
+        ),
       ),
     );
   }
@@ -208,9 +235,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(label),
+        label: Text(formatStatus(label)),
         selected: selected,
-        selectedColor: const Color(0xFF00A8A8).withOpacity(0.2),
+        selectedColor: const Color(0xFF00A8A8).withValues(alpha: 0.2),
         labelStyle: TextStyle(
           color: selected ? const Color(0xFF00A8A8) : Colors.grey,
         ),
@@ -220,25 +247,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
         },
       ),
     );
-  }
-
-  /// 📅 MONTH FORMAT
-  String _monthName(int month) {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    return months[month - 1];
   }
 }
 
@@ -279,6 +287,7 @@ class SectionHeader extends StatelessWidget {
 }
 
 class ProjectCard extends StatelessWidget {
+  final String code;
   final String id;
   final String title;
   final String subtitle;
@@ -287,22 +296,23 @@ class ProjectCard extends StatelessWidget {
 
   const ProjectCard({
     super.key,
-    required this.id,
+    required this.code,
     required this.title,
     required this.subtitle,
     required this.date,
     required this.status,
+    required this.id,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isActive = status == "Active";
+    final isActive = status.toUpperCase() == "IN PROGRESS";
 
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ProjectDashboard()),
+          MaterialPageRoute(builder: (_) => ProjectDashboard(code: code)),
         );
       },
       child: Container(
@@ -311,7 +321,9 @@ class ProjectCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF00A8A8).withOpacity(0.3)),
+          border: Border.all(
+            color: const Color(0xFF00A8A8).withValues(alpha: 0.3),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,36 +332,57 @@ class ProjectCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
-                borderRadius: BorderRadius.all(Radius.circular(2)),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                id,
+                code,
                 style: TextStyle(color: Colors.grey.shade800, fontSize: 12),
               ),
             ),
-            const SizedBox(height: 6),
+
+            const SizedBox(height: 8),
+
             Text(
               title,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 4),
+
             Row(
               children: [
-                Icon(Icons.layers_outlined, color: Colors.teal),
-                Text(subtitle, style: const TextStyle(color: Colors.grey)),
+                const Icon(Icons.layers_outlined, color: Colors.teal, size: 18),
+
+                const SizedBox(width: 6),
+
+                Expanded(
+                  child: Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.grey),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
+
             const Divider(height: 20),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 16, color: Colors.teal),
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: Colors.teal,
+                    ),
                     const SizedBox(width: 6),
                     Text(date),
                   ],
                 ),
+
                 Row(
                   children: [
                     Container(
@@ -364,8 +397,8 @@ class ProjectCard extends StatelessWidget {
                               : Colors.grey,
                         ),
                         color: isActive
-                            ? const Color(0xFF00A8A8).withOpacity(0.1)
-                            : Colors.grey.withOpacity(0.1),
+                            ? const Color(0xFF00A8A8).withValues(alpha: 0.1)
+                            : Colors.grey.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -378,8 +411,14 @@ class ProjectCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     const SizedBox(width: 6),
-                    Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400),
+
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey.shade400,
+                    ),
                   ],
                 ),
               ],

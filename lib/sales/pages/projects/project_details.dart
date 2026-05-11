@@ -1,28 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ska_crm/sales/pages/projects/quotation.dart';
 import 'package:ska_crm/sales/pages/projects/update_quotation.dart';
+
+import '../../sales_service.dart';
 import 'cancel_quotation.dart';
 
-class ProjectDashboard extends StatelessWidget {
-  const ProjectDashboard({super.key});
+class ProjectDashboard extends StatefulWidget {
+  final String code;
+  const ProjectDashboard({super.key, required this.code});
+
+  @override
+  State<ProjectDashboard> createState() => _ProjectDashboardState();
+}
+
+class _ProjectDashboardState extends State<ProjectDashboard> {
+  final SalesService salesService = SalesService();
+  bool isLoading = true;
+  Map<String, dynamic> project = {};
+  @override
+  void initState() {
+    init();
+
+    super.initState();
+  }
+
+  Future<void> init() async {
+    project = await salesService.fetchProjectByCode(code: widget.code);
+
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: const Icon(Icons.arrow_back, color: Colors.black),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Text(
-                  "SKA-2025-0042",
-                  style: TextStyle(color: Colors.black),
-                ),
+                Text(widget.code, style: TextStyle(color: Colors.black)),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -33,8 +65,8 @@ class ProjectDashboard extends StatelessWidget {
                     color: Colors.teal,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    "ACTIVE",
+                  child: Text(
+                    project['status'],
                     style: TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
@@ -50,14 +82,14 @@ class ProjectDashboard extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          children: const [
-            CustomerInfoCard(),
-            SizedBox(height: 16),
-            ProjectDetailsCard(),
-            SizedBox(height: 16),
-            ActionButtons(),
-            SizedBox(height: 16),
-            ProjectSummary(),
+          children: [
+            CustomerInfoCard(project: project),
+            const SizedBox(height: 16),
+            ProjectDetailsCard(project: project),
+            const SizedBox(height: 16),
+            ActionButtons(project: project),
+            const SizedBox(height: 16),
+            ProjectSummary(project: project),
           ],
         ),
       ),
@@ -66,7 +98,8 @@ class ProjectDashboard extends StatelessWidget {
 }
 
 class CustomerInfoCard extends StatelessWidget {
-  const CustomerInfoCard({super.key});
+  final Map<String, dynamic> project;
+  const CustomerInfoCard({super.key, required this.project});
 
   Widget item(IconData icon, String title, String value) {
     return Padding(
@@ -105,7 +138,9 @@ class CustomerInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.teal.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00A8A8).withOpacity(0.3)),
+        border: Border.all(
+          color: const Color(0xFF00A8A8).withValues(alpha: 0.3),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -125,12 +160,13 @@ class CustomerInfoCard extends StatelessWidget {
               ],
             ),
             const Divider(),
-            item(Icons.person, "PRIMARY CONTACT", "Alexander Sterling"),
-            item(Icons.phone, "CONTACT NUMBER", "+1 (555) 234-8901"),
+            item(Icons.person, "PRIMARY CONTACT", project['customer']['name']),
+            item(Icons.phone, "CONTACT NUMBER", project['customer']['phone']),
+            item(Icons.email_outlined, "EMAIL", project['customer']['email']),
             item(
               Icons.location_on,
               "SITE ADDRESS",
-              "722 Industrial Pkwy, Suite 400, Chicago, IL",
+              project['customer']['address'],
             ),
           ],
         ),
@@ -140,10 +176,15 @@ class CustomerInfoCard extends StatelessWidget {
 }
 
 class ProjectDetailsCard extends StatelessWidget {
-  const ProjectDetailsCard({super.key});
+  final Map<String, dynamic> project;
+  const ProjectDetailsCard({super.key, required this.project});
 
   @override
   Widget build(BuildContext context) {
+    final date = DateTime.parse(project['deadline'].toString());
+    final deadline =
+        '${DateFormat('MMMM').format(date)} ${date.day}, ${date.year}';
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -163,21 +204,21 @@ class ProjectDetailsCard extends StatelessWidget {
             const Divider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "SERVICE TYPE",
                       style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.circle, color: Colors.teal, size: 15),
-                        SizedBox(width: 5),
+                        const Icon(Icons.circle, color: Colors.teal, size: 15),
+                        const SizedBox(width: 5),
                         Text(
-                          "Structural Engineering",
+                          project['service_type'],
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -187,21 +228,21 @@ class ProjectDetailsCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
+                    const Text(
                       "DEADLINE",
                       style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.calendar_today_outlined,
                           color: Colors.red,
                           size: 15,
                         ),
-                        SizedBox(width: 5),
+                        const SizedBox(width: 5),
                         Text(
-                          "Mar 28, 2025",
+                          deadline,
                           style: TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.w600,
@@ -222,20 +263,21 @@ class ProjectDetailsCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              "Comprehensive seismic retrofitting for the main warehouse facility. Must comply with 2025 safety standards.",
-            ),
+            Text(project['description']),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text("PROJECT EVOLUTION"),
-                Text("Stage 4 of 9", style: TextStyle(color: Colors.teal)),
+              children: [
+                const Text("PROJECT EVOLUTION"),
+                Text(
+                  "Stage ${project['current_stage']} of 9",
+                  style: const TextStyle(color: Colors.teal),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(
-              value: 4 / 9,
+              value: int.parse(project['current_stage'].toString()) / 9,
               borderRadius: BorderRadius.circular(10),
               minHeight: 6,
               color: Colors.teal,
@@ -248,7 +290,8 @@ class ProjectDetailsCard extends StatelessWidget {
 }
 
 class ActionButtons extends StatelessWidget {
-  const ActionButtons({super.key});
+  final Map<String, dynamic> project;
+  const ActionButtons({super.key, required this.project});
 
   Widget button(
     Color textColor,
@@ -264,19 +307,26 @@ class ActionButtons extends StatelessWidget {
           if (text == "QUOTATION") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => QuotationsScreen()),
+              MaterialPageRoute(
+                builder: (_) => QuotationsScreen(code: project['project_code']),
+              ),
             );
           }
           if (text == "UPDATE PROJECT") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => QuotationScreen()),
+              MaterialPageRoute(
+                builder: (_) => QuotationScreen(code: project['project_code']),
+              ),
             );
           }
           if (text == "REQUEST CANCEL") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => RequestCancellationPage()),
+              MaterialPageRoute(
+                builder: (_) =>
+                    RequestCancellationPage(code: project['project_code']),
+              ),
             );
           }
         },
@@ -295,6 +345,7 @@ class ActionButtons extends StatelessWidget {
               Icon(icon, color: textColor),
               const SizedBox(height: 4),
               Text(
+                textAlign: TextAlign.center,
                 text,
                 style: TextStyle(
                   color: textColor,
@@ -343,51 +394,96 @@ class ActionButtons extends StatelessWidget {
 }
 
 class ProjectSummary extends StatelessWidget {
-  const ProjectSummary({super.key});
+  final Map<String, dynamic> project;
+  const ProjectSummary({super.key, required this.project});
 
   @override
   Widget build(BuildContext context) {
+    final List<dynamic> tasks = project['tasks'];
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          children: const [
-            Row(
+          children: [
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   "Project Summary",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  "Updated 2h ago",
-                  style: TextStyle(color: Colors.teal, fontSize: 12),
-                ),
+                // Text(
+                //   "Updated 2h ago",
+                //   style: TextStyle(color: Colors.teal, fontSize: 12),
+                // ),
               ],
             ),
-            SizedBox(height: 8),
-            Text(
-              "The structural analysis for SKA-2025-0042 is complete. Material sourcing for high-tensile steel components is currently in progress.",
-            ),
-            SizedBox(height: 12),
-            Align(
+            const SizedBox(height: 8),
+            // Text(
+            //   "The structural analysis for SKA-2025-0042 is complete. Material sourcing for high-tensile steel components is currently in progress.",
+            // ),
+            const SizedBox(height: 12),
+            const Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "UPCOMING TASKS",
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ),
-            SizedBox(height: 8),
-            ListTile(
-              leading: Icon(Icons.circle, size: 10, color: Colors.orange),
-              title: Text("Finalize Quotation #Q-992"),
-              trailing: Text("Tomorrow"),
-            ),
-            ListTile(
-              leading: Icon(Icons.circle, size: 10, color: Colors.grey),
-              title: Text("Client Review Meeting"),
-              trailing: Text("Fri, 14 Mar"),
+            const SizedBox(height: 8),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                String monthName(int month) {
+                  const months = [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ];
+
+                  return months[month - 1];
+                }
+
+                final task = tasks[index];
+                final due = DateTime.parse(task['due_at'].toString());
+                final now = DateTime.now();
+
+                final today = DateTime(now.year, now.month, now.day);
+                final dueDate = DateTime(due.year, due.month, due.day);
+                final quotations = task['quotations'];
+
+                return ListTile(
+                  leading: Icon(
+                    Icons.circle,
+                    size: 10,
+                    color:
+                        quotations.isNotEmpty &&
+                            quotations[0]['approval_status'] == "SENT"
+                        ? Colors.blue
+                        : Colors.orange,
+                  ),
+                  title: Text(task['title']),
+                  trailing: Text(
+                    dueDate == today
+                        ? "Today"
+                        : dueDate == today.add(const Duration(days: 1))
+                        ? "Tomorrow"
+                        : "${monthName(due.month)} ${due.day}, ${due.year}",
+                  ),
+                );
+              },
             ),
           ],
         ),

@@ -1,12 +1,48 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:ska_crm/sales/sales_service.dart';
+
+import '../active_projects/active_projects.dart';
+import '../recent_customers/recent_customers.dart';
 import 'widget.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final SalesService salesService = SalesService();
+  bool isLoading = true;
+  Map<String, dynamic> data = {};
+  @override
+  void initState() {
+    init();
+
+    super.initState();
+  }
+
+  Future<void> init() async {
+    data = await salesService.fetchDashboardData();
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final currentDate =
+        '${DateFormat('MMMM').format(DateTime.now())} ${DateTime.now().day}, ${DateTime.now().year}';
+    final List<dynamic> resentCustomers = data['resentCustomers'] ?? [];
+    final List<dynamic> activeProjectsDetailed =
+        data['activeProjectsDetailed'] ?? [];
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       backgroundColor: const Color(0xffF5F6F8),
       body: SafeArea(
@@ -20,8 +56,8 @@ class DashboardScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              const Text(
-                "Shree Krishna Ads • April 05, 2026",
+              Text(
+                "Shree Krishna Ads • $currentDate",
                 style: TextStyle(color: Colors.grey),
               ),
 
@@ -38,25 +74,25 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   StatCard(
                     title: "TOTAL CUSTOMERS",
-                    value: "124",
+                    value: data['totalCustomer'].toString(),
                     color: Colors.cyan.shade700,
                     icon: Icons.people_alt_outlined,
                   ),
                   StatCard(
                     title: "ACTIVE PROJECTS",
-                    value: "38",
+                    value: data['activeProjects'].toString(),
                     color: Colors.blueGrey.shade700,
                     icon: CupertinoIcons.briefcase,
                   ),
                   StatCard(
                     title: "PENDING QUOTATION",
-                    value: "14",
+                    value: data['pendingQuotations'].toString(),
                     color: Colors.brown.shade700,
                     icon: Icons.pending,
                   ),
                   StatCard(
                     title: "APPROVED DEALS",
-                    value: "89",
+                    value: data['approvedDeals'].toString(),
                     color: Colors.lightGreen.shade700,
                     icon: CupertinoIcons.check_mark_circled,
                   ),
@@ -69,12 +105,23 @@ class DashboardScreen extends StatelessWidget {
               sectionHeader(
                 "Recent Customers",
                 "See all",
-                DashboardScreen(),
+                RecentCustomers(),
                 context,
               ),
               const SizedBox(height: 12),
-              const CustomerTile(name: "Marcus Holloway"),
-              const CustomerTile(name: "Sarah Chen"),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: resentCustomers.length,
+                itemBuilder: (context, index) {
+                  final customer = resentCustomers[index];
+
+                  return CustomerTile(
+                    name: customer['name'],
+                    mobile: customer['phone'],
+                  );
+                },
+              ),
 
               const SizedBox(height: 24),
 
@@ -82,39 +129,43 @@ class DashboardScreen extends StatelessWidget {
               sectionHeader(
                 "Active Projects",
                 "View All",
-                DashboardScreen(),
+                ActiveProjects(),
                 context,
               ),
               const SizedBox(height: 12),
-
-              const ProjectCard(
-                title: "Global Tech Solutions",
-                status: "Delayed",
-                description:
-                    "Infrastructure upgrade phase 2. Deployment of 5G networking modules and edge server",
-                date: "Overdue: Oct 12, 2025",
-                isDelayed: true,
-              ),
-
-              const SizedBox(height: 12),
-
-              const ProjectCard(
-                title: "Nexus Retail Group",
-                status: "In Progress",
-                description:
-                    "Point-of-sale system integration for 15 regional outlets. Currently in UAT phase.",
-                date: "Deadline: Oct 28, 2025",
-                isDelayed: false,
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: activeProjectsDetailed.length,
+                itemBuilder: (context, index) {
+                  final projects = activeProjectsDetailed[index];
+                  final DateTime deadline = DateTime.parse(
+                    projects['deadline'].toString(),
+                  );
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: ProjectCard(
+                      code: projects['project_code'],
+                      title: projects['customer']['name'].toString(),
+                      status: projects['status'],
+                      description: projects['description'],
+                      date: deadline.isBefore(DateTime.now())
+                          ? "Overdue: ${DateFormat('MMMM').format(deadline)} ${deadline.day}, ${deadline.year}"
+                          : "Due: ${DateFormat('MMMM').format(deadline)} ${deadline.day}, ${deadline.year}",
+                      isDelayed: deadline.isBefore(DateTime.now()),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 20),
 
-               Center(
-                child: Text(
-                  "UPDATED 2 MINS AGO • HIGH CONTRAST MODE ACTIVE",
-                  style: TextStyle(fontSize: 12, color: Colors.teal),
-                ),
-              ),
+              // Center(
+              //   child: Text(
+              //     "UPDATED 2 MINS AGO • HIGH CONTRAST MODE ACTIVE",
+              //     style: TextStyle(fontSize: 12, color: Colors.teal),
+              //   ),
+              // ),
             ],
           ),
         ),

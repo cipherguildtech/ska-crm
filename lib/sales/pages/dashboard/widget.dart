@@ -94,8 +94,8 @@ class StatCard extends StatelessWidget {
 
 class CustomerTile extends StatelessWidget {
   final String name;
-
-  const CustomerTile({super.key, required this.name});
+  final String mobile;
+  const CustomerTile({super.key, required this.name, required this.mobile});
 
   @override
   Widget build(BuildContext context) {
@@ -118,17 +118,34 @@ class CustomerTile extends StatelessWidget {
               ),
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(Icons.person_2_outlined, color: Colors.teal, size: 30),
+                child: Icon(
+                  Icons.person_2_outlined,
+                  color: Colors.teal,
+                  size: 30,
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    mobile,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
             const Icon(Icons.chevron_right),
@@ -145,7 +162,7 @@ class ProjectCard extends StatelessWidget {
   final String description;
   final String date;
   final bool isDelayed;
-
+  final String code;
   const ProjectCard({
     super.key,
     required this.title,
@@ -153,6 +170,7 @@ class ProjectCard extends StatelessWidget {
     required this.description,
     required this.date,
     required this.isDelayed,
+    required this.code,
   });
 
   @override
@@ -170,7 +188,7 @@ class ProjectCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("SKA-2025-0042", style: TextStyle(color: Colors.grey)),
+              Text(code, style: TextStyle(color: Colors.grey)),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,

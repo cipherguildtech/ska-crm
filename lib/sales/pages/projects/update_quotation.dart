@@ -2,7 +2,8 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 
 class QuotationScreen extends StatelessWidget {
-  const QuotationScreen({super.key});
+  final String code;
+  const QuotationScreen({super.key, required this.code});
 
   @override
   Widget build(BuildContext context) {

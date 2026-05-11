@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class RequestCancellationPage extends StatefulWidget {
-  const RequestCancellationPage({super.key});
+  final String code;
+  const RequestCancellationPage({super.key, required this.code});
 
   @override
   State<RequestCancellationPage> createState() =>

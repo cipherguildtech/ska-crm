@@ -1,356 +1,377 @@
-import 'package:dotted_border/dotted_border.dart';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-class CreateQuotationScreen extends StatelessWidget {
-  const CreateQuotationScreen({super.key});
+import '../../sales_service.dart';
+
+class PickedPdfFile {
+  final String name;
+  final String path;
+
+  const PickedPdfFile({required this.name, required this.path});
+}
+
+class CreateQuotationScreen extends StatefulWidget {
+  final String taskId;
+  final String projectId;
+
+  const CreateQuotationScreen({
+    super.key,
+    required this.taskId,
+    required this.projectId,
+  });
+
+  @override
+  State<CreateQuotationScreen> createState() => _CreateQuotationScreenState();
+}
+
+class _CreateQuotationScreenState extends State<CreateQuotationScreen> {
+  final SalesService salesService = SalesService();
+
+  final TextEditingController amountController = TextEditingController();
+
+  final TextEditingController advanceController = TextEditingController();
+
+  final TextEditingController notesController = TextEditingController();
+
+  bool isLoading = false;
+
+  /// MULTIPLE PDF FILES
+  final List<PickedPdfFile> pdfFiles = [];
+
+  /// PICK PDFs
+  Future<void> pickPdfFiles() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: true,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        for (final pickedFile in result.files) {
+          final path = pickedFile.path;
+
+          if (path == null) continue;
+
+          final alreadyAdded = pdfFiles.any((pdf) => pdf.path == path);
+
+          if (!alreadyAdded) {
+            pdfFiles.add(PickedPdfFile(name: pickedFile.name, path: path));
+          }
+        }
+      });
+    }
+  }
+
+  /// CREATE QUOTATION
+  Future<void> createQuotation({required String status}) async {
+    if (pdfFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add at least one PDF')),
+      );
+
+      return;
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final double totalAmount = double.tryParse(amountController.text) ?? 0;
+
+      final double advancePaid = double.tryParse(advanceController.text) ?? 0;
+
+      /// CONVERT PDFs TO BASE64
+      final List<String> pdfBase64List = [];
+
+      for (final pdfFile in pdfFiles) {
+        final bytes = await File(pdfFile.path).readAsBytes();
+
+        final base64Pdf = base64Encode(bytes);
+
+        pdfBase64List.add(base64Pdf);
+      }
+
+      /// CREATE QUOTATION
+      final quotationRes = await salesService.createQuotation(
+        taskId: widget.taskId,
+        amount: totalAmount,
+        advancePaid: advancePaid > 0 ? advancePaid : null,
+        approvalStatus: status,
+
+        /// SEND LIST OF PDFs
+        pdfs: pdfBase64List,
+      );
+
+      if (quotationRes['success'] != true) {
+        throw Exception(
+          quotationRes['message'] ?? 'Failed to create quotation',
+        );
+      }
+
+      final quotationId = quotationRes['data']['id'];
+
+      /// CREATE PAYMENT
+      if (advancePaid > 0) {
+        await salesService.createPayment(
+          projectId: widget.projectId,
+          quotationId: quotationId,
+          amount: advancePaid,
+          type: 'CASH',
+          reference: '',
+          paidAt: DateTime.now(),
+        );
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            status == 'SENT'
+                ? 'Quotation sent successfully'
+                : 'Quotation saved as draft',
+          ),
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    advanceController.dispose();
+    notesController.dispose();
+
+    super.dispose();
+  }
+
+  Widget inputField({
+    required String label,
+    required TextEditingController controller,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+        const SizedBox(height: 8),
+
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const Icon(Icons.arrow_back, color: Colors.black),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Create Quotation",
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
-            Text(
-              "Proj: Metro Billboard",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ],
+
+        title: const Text(
+          "Create Quotation",
+          style: TextStyle(color: Colors.black),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.info_outline, color: Colors.black),
-          ),
-        ],
+
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
-            /// LINE ITEMS HEADER
-            Row(
-              children: [
-                const Icon(Icons.receipt_long, size: 18),
-                const SizedBox(width: 8),
-                const Text(
-                  "LINE ITEMS",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    "2 Items",
-                    style: TextStyle(
-                      color: Colors.teal,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            /// ITEM CARD 1
-            const ItemCard(
-              title: "Banner design - Monsoon Camp",
-              qty: "1",
-              price: "5000",
-              total: "5,000.00",
+            /// TOTAL AMOUNT
+            inputField(
+              label: "Total Amount",
+              controller: amountController,
+              keyboardType: TextInputType.number,
             ),
 
-            /// ITEM CARD 2
-            const ItemCard(
-              title: "Social Media Ad Placement (30)",
-              qty: "3",
-              price: "1200",
-              total: "3,600.00",
+            const SizedBox(height: 20),
+
+            /// ADVANCE PAID
+            inputField(
+              label: "Advance Paid",
+              controller: advanceController,
+              keyboardType: TextInputType.number,
             ),
 
-            const SizedBox(height: 12),
-
-            /// ADD NEW ITEM BUTTON
-            DottedBorder(
-              color: Colors.teal,
-              strokeWidth: 1,
-              dashPattern: [6, 3], // dash length, gap
-              borderType: BorderType.RRect,
-              radius: const Radius.circular(12),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: const Center(
-                  child: Text(
-                    "+ Add New Item",
-                    style: TextStyle(
-                      color: Colors.teal,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            /// SUMMARY
-            const Text(
-              "SUMMARY",
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
-            ),
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: const [
-                  SummaryRow(label: "Subtotal", value: "₹8,600.00"),
-                  SummaryRow(label: "GST (18%)", value: "₹1,548.00"),
-                  Divider(),
-                  SizedBox(height: 8),
-                  TotalBox(),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             /// NOTES
-            const Text(
-              "NOTES / TERMS",
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
-            ),
-            const SizedBox(height: 10),
-
-            TextField(
+            inputField(
+              label: "Notes / Terms",
+              controller: notesController,
               maxLines: 4,
-              decoration: InputDecoration(
-                hintText:
-                    "Add payment terms, delivery notes, or internal comments...",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
             ),
 
             const SizedBox(height: 24),
 
-            /// BUTTONS
+            /// PDF SECTION
+            const Text(
+              "Quotation PDFs",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+
+            const SizedBox(height: 10),
+
+            OutlinedButton.icon(
+              onPressed: pickPdfFiles,
+
+              icon: const Icon(Icons.upload_file),
+
+              label: const Text("Add PDF Files"),
+            ),
+
+            const SizedBox(height: 10),
+
+            /// PDF LIST
+            if (pdfFiles.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(12),
+
+                decoration: BoxDecoration(
+                  color: Colors.white,
+
+                  borderRadius: BorderRadius.circular(12),
+                ),
+
+                child: Column(
+                  children: pdfFiles.asMap().entries.map((entry) {
+                    final index = entry.key;
+
+                    final file = entry.value;
+
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+
+                      leading: const Icon(
+                        Icons.picture_as_pdf,
+                        color: Colors.red,
+                      ),
+
+                      title: Text(file.name),
+
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+
+                        onPressed: () {
+                          setState(() {
+                            pdfFiles.removeAt(index);
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+            const SizedBox(height: 30),
+
+            /// SEND BUTTON
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 55),
+
                 backgroundColor: Colors.teal,
+
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {},
-              icon: const Icon(Icons.send, color: Colors.white),
+
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      await createQuotation(status: 'SENT');
+                    },
+
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.send, color: Colors.white),
+
               label: const Text(
                 "Send to Customer",
+
                 style: TextStyle(color: Colors.white),
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
+            /// SAVE DRAFT
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 55),
+
                 side: const BorderSide(color: Colors.teal),
+
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {},
+
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      await createQuotation(status: 'DRAFT');
+                    },
+
               icon: const Icon(Icons.save, color: Colors.teal),
+
               label: const Text(
                 "Save as Draft",
+
                 style: TextStyle(color: Colors.teal),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// ---------------- ITEM CARD ----------------
-class ItemCard extends StatelessWidget {
-  final String title, qty, price, total;
-
-  const ItemCard({
-    super.key,
-    required this.title,
-    required this.qty,
-    required this.price,
-    required this.total,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE0F2F1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(title),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.delete_outline_outlined, color: Colors.red),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _inputBox("QTY", qty),
-              _inputBox("UNIT PRICE", "₹ $price"),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    "TOTAL",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  Text(
-                    "₹$total",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _inputBox(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(value),
-        ),
-      ],
-    );
-  }
-}
-
-/// ---------------- SUMMARY ROW ----------------
-class SummaryRow extends StatelessWidget {
-  final String label, value;
-
-  const SummaryRow({super.key, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
-}
-
-/// ---------------- TOTAL BOX ----------------
-class TotalBox extends StatelessWidget {
-  const TotalBox({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE0F2F1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "TOTAL AMOUNT",
-                style: TextStyle(
-                  color: Colors.teal,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                "Includes all applicable taxes",
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-          Text(
-            "₹10,148.00",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.teal,
-            ),
-          ),
-        ],
       ),
     );
   }

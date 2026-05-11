@@ -1,15 +1,15 @@
 @baseUrl = http://localhost:3000
 
-# @name createProject1
+###
+# @name createProject2
 POST {{baseUrl}}/projects
 Content-Type: application/json
 
 {
-  "project_code": "Shiva  ",
-  "customer_email": "operations@malabargold-kannur.local",
-  "service_type": "LED_BOARD",
-  "description": "Premium front elevation LED sign board with gold acrylic letters and warm backlight.",
-  "deadline": "2026-05-03T18:00:00.000Z",
+  "project_code": "SKA-2026-011",
+  "customer_email": "owner@spicebay-kochi.local",
+  "service_type": "BOARD",
+  "description": "For Banner for sv and shiv's marriage . this is the fist marroage in Thoothukudi",
+  "deadline": "2026-05-07T18:00:00.000Z",
   "created_user_email": "123bala2000@gmail.com"
 }
-
