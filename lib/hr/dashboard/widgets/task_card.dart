@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../assign_task/projectdetails.dart';
 import '../in_progress/in_progress.dart';
 import '../in_review/in_review.dart';
+import '../../projects/project_detail/projectdetails.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -107,7 +107,7 @@ class TaskCard extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => ProjectDetailsPage(
-                          projectId: task['id'] ?? "",
+                          projectCode: task['project_code'] ?? "",
                         ),
                       ),
                     );

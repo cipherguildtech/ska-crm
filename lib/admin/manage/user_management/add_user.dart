@@ -1,6 +1,5 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:ska_crm/hr/dashboard/dashboard.dart';
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key});
@@ -70,12 +69,12 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: primary.withValues(alpha: 0.1),
+                      color: Colors.teal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.person_2_outlined, color: primary),
+                      child: Icon(Icons.person_2_outlined, color: Colors.teal),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -125,12 +124,12 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: primary.withValues(alpha: 0.1),
+                      color: Colors.teal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.cases_outlined, color: primary),
+                      child: Icon(Icons.cases_outlined, color: Colors.teal),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -156,7 +155,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
               const SizedBox(height: 12),
 
               DropdownButtonFormField<String>(
-                value: selectedRole,
+                initialValue: selectedRole,
                 hint: const Text('Select Role'),
                 items: roles.map((role) {
                   return DropdownMenuItem(value: role, child: Text(role));
@@ -167,7 +166,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
               const SizedBox(height: 12),
 
               DropdownButtonFormField<String>(
-                value: selectedDept,
+                initialValue: selectedDept,
                 hint: const Text('Select Department'),
                 items: departments.map((dept) {
                   return DropdownMenuItem(value: dept, child: Text(dept));
@@ -182,12 +181,12 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: primary.withValues(alpha: 0.1),
+                      color: Colors.teal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.cases_outlined, color: primary),
+                      child: Icon(Icons.cases_outlined, color: Colors.teal),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -246,7 +245,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.restart_alt, color: primary),
+                        Icon(Icons.restart_alt, color: Colors.teal),
                         SizedBox(width: 10),
                         Text(
                           "Auto-generate Password",
@@ -269,7 +268,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   side: const BorderSide(color: Colors.teal),
                 ),
                 activeThumbColor: Colors.white,
-                activeTrackColor: primary,
+                activeTrackColor: Colors.teal,
                 value: emailNotification,
                 onChanged: (val) => setState(() => emailNotification = val),
                 title: Padding(
@@ -314,7 +313,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primary,
+                        backgroundColor: Colors.teal,
                         foregroundColor: Colors.white,
                       ),
                       onPressed: submitForm,

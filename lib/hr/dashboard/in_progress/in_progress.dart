@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../utils/config.dart';
+import 'task_card.dart';
+import 'quotation_card.dart';
+import 'task_history.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -21,13 +24,15 @@ class _InProgressPageState extends State<InProgressPage> {
   @override
   void initState() {
     super.initState();
+
     fetchTask();
   }
 
-  String formatDate(String? date) {
-    if (date == null || date.isEmpty) return "-";
-    final d = DateTime.tryParse(date);
-    if (d == null) return date;
+  String formatDate(dynamic date) {
+    if (date == null) return "-";
+
+    final d = DateTime.tryParse(date.toString());
+    if (d == null) return "-";
 
     const months = [
       "Jan","Feb","Mar","Apr","May","Jun",
@@ -40,7 +45,7 @@ class _InProgressPageState extends State<InProgressPage> {
   Future<void> fetchTask() async {
     try {
       final response = await http.get(
-        Uri.parse("$baseUrl/tasks/single/${widget.taskId}"),
+        Uri.parse("$baseUrl/tasks/task/details/${widget.taskId}"),
       );
 
       if (response.statusCode == 200  || response.statusCode == 201) {
@@ -157,104 +162,6 @@ class _InProgressPageState extends State<InProgressPage> {
     );
   }
 
-  Widget taskCard(Map task) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          /// TOP
-          Row(
-            children: [
-              Text(
-                "PRJ-${task['id']}",
-                style: const TextStyle(
-                    fontSize: 11, color: Colors.grey),
-              ),
-              const Spacer(),
-              Text(
-                task['status'] ?? "",
-                style: const TextStyle(
-                    fontSize: 11, color: Colors.black54),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-
-          /// TITLE
-          Text(
-            task['department'] ?? "",
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, fontSize: 14),
-          ),
-
-          const SizedBox(height: 6),
-
-          /// DESCRIPTION
-          Text(
-            task['title'] ?? "",
-            style: const TextStyle(color: Colors.black54),
-          ),
-
-          const SizedBox(height: 10),
-
-          /// META ROW
-          Row(
-            children: [
-              const Icon(Icons.flag, size: 14, color: Colors.red),
-              const SizedBox(width: 5),
-              const Text("High", style: TextStyle(fontSize: 12)),
-
-              const SizedBox(width: 15),
-
-              const Icon(Icons.calendar_today, size: 14),
-              const SizedBox(width: 5),
-              Text(formatDate(task['due_at']),
-                  style: const TextStyle(fontSize: 12)),
-
-              const Spacer(),
-
-              const Icon(Icons.attach_file, size: 14),
-              const SizedBox(width: 3),
-              const Text("0"),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          /// USER ROW (dummy like UI)
-          Row(
-            children: [
-              const CircleAvatar(radius: 14, child: Icon(Icons.person, size: 16)),
-              const SizedBox(width: 8),
-
-              const Expanded(
-                child: LinearProgressIndicator(
-                  value: 0.6,
-                  color: primary,
-                  backgroundColor: Colors.grey,
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-
   Widget sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -318,11 +225,14 @@ class _InProgressPageState extends State<InProgressPage> {
   Widget build(BuildContext context) {
     final project = data?['project'] ?? {};
     final task = data ?? {};
+    final history = (data?['taskHistory'] ?? []) as List;
+    final List quotation = List.from(data?['quotations'] ?? []);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("In Progress"),
         backgroundColor: primary,
+        foregroundColor: Colors.white,
       ),
       backgroundColor: const Color(0xFFF5F7FA),
 
@@ -349,20 +259,50 @@ class _InProgressPageState extends State<InProgressPage> {
 
             const SizedBox(height: 20),
 
-            /// TASK HEADER
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text("Task Details",
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-                Text("View All", style: TextStyle(color: primary)),
-              ],
+            const Text(
+              "Task Detail",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
-            /// TASK CARD
-            taskCard(task),
+            TaskCard(task:task,formatDate:formatDate),
+
+            const SizedBox(height: 20),
+
+            if (quotation.isNotEmpty) ...[
+              const Text(
+                "Quotation",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Column(
+                children: quotation.map((q) {
+                  return QuotationCard(
+                    quotation: q,
+                    formatDate: formatDate,
+                  );
+                }).toList(),
+              ),
+            ] else ...[
+              const SizedBox(height: 20),
+
+            ],
+            if (history.isNotEmpty) ...[
+              const Text(
+                "Task History",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              TaskHistory(
+                history: history,
+                formatDate: formatDate,
+              ),
+            ] else ...[
+
+              const SizedBox(height: 20),
+
+            ]
           ],
         ),
       ),
