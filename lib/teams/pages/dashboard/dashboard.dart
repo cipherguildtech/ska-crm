@@ -1,9 +1,138 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:ska_crm/utils/config.dart';
+import 'package:intl/intl.dart';
 
-class Dashboard extends StatelessWidget {
-  const Dashboard({super.key});
+import '../my_tasks/completed_detailed_task.dart';
+import '../my_tasks/in_completed_detailed_task.dart';
 
+dynamic totalTaskCount;
+dynamic pendingTaskCount;
+dynamic inProgressTaskCount;
+dynamic completedTaskCount;
+dynamic delayedTaskCount;
+dynamic inCompleteTaskCount;
+late Future<List<TaskCard>> activeTasksFuture;
+
+class Dashboard extends StatefulWidget {
+  final Function(int) switchPage;
+  const Dashboard({
+    super.key,
+    required this.switchPage
+  });
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+
+  Future<void> loadCount() async {
+    final pref = await SharedPreferences.getInstance();
+    final phone = pref.get('phone');
+    final url = Uri.parse('$baseUrl/users/team/task_type_count/$phone');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    if(response.statusCode == 200) {
+      final Map<String, dynamic> countData = jsonDecode(response.body);
+      print(countData);
+
+      setState(() {
+        totalTaskCount = countData['total_task_count']!;
+        completedTaskCount = countData['completed_task_count']!;
+        pendingTaskCount = countData['pending_task_count']!;
+        inProgressTaskCount = countData['in_progress_task_count']!;
+        delayedTaskCount = countData['delayed_task_count']!;
+        inCompleteTaskCount = countData['incomplete_task_count']!;
+      });
+    }
+    else {
+
+    }
+  }
+
+  Future<List<TaskCard>> fetchActiveTasks() async {
+    final pref = await SharedPreferences.getInstance();
+    final phone = pref.get('phone');
+    final url = Uri.parse('$baseUrl/users/team/active_tasks/$phone');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    if(response.statusCode == 200) {
+      List<dynamic>  activeTasks = jsonDecode(response.body);
+      List<TaskCard> activeTaskWidgets = [
+        TaskCard(
+                 taskId: activeTasks[0]['id'],
+                 id: activeTasks[0]['project']['project_code'],
+                 title: activeTasks[0]['title'],
+                 status: activeTasks[0]['status'],
+                 deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
+                 isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
+        ),
+        TaskCard(
+            taskId: activeTasks[1]['id'],
+            id: activeTasks[1]['project']['project_code'],
+            title: activeTasks[1]['title'],
+            status: activeTasks[1]['status'],
+            deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
+            isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
+        ),
+        TaskCard(
+            taskId: activeTasks[2]['id'],
+            id: activeTasks[2]['project']['project_code'],
+            title: activeTasks[2]['title'],
+            status: activeTasks[2]['status'],
+            deadline: DateFormat('MMMM d, y').format(DateTime.parse(activeTasks[2]['due_at'])),
+            isDelayed: DateTime.parse(activeTasks[0]['due_at']).isBefore(DateTime.now())
+        )
+      ];
+      return activeTaskWidgets;
+    }
+    else {
+      return [];
+    }
+}
+
+  @override
+  void initState() {
+    super.initState();
+    loadCount();
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      final hasInternet = results.any((r) => r != ConnectivityResult.none);
+      if (hasInternet) {
+        loadCount();
+      }
+    });
+    setState(() {
+      activeTasksFuture = fetchActiveTasks();
+
+      _connectivitySubscription = Connectivity()
+          .onConnectivityChanged
+          .listen((List<ConnectivityResult> results) {
+        final hasInternet = results.any((r) => r != ConnectivityResult.none);
+        if (hasInternet) {
+          activeTasksFuture = fetchActiveTasks();
+        }
+      });
+
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,29 +146,30 @@ class Dashboard extends StatelessWidget {
             const SizedBox(height: 16),
             _buildActiveTasksHeader(),
             const SizedBox(height: 10),
-
-            TaskCard(
-              id: "SKA-7721",
-              title: "Shop Flex Banner Design",
-              status: "In Progress",
-              deadline: "Today, 4:00 AM",
-              isDelayed: false,
+            FutureBuilder<List<TaskCard>>(
+                future: activeTasksFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Text('No active tasks', style: TextStyle(color: Colors.grey,fontSize: 25)),
+                    );
+                  }
+                  // Error
+                  final activeTasks = snapshot.data!;
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: activeTasks.length,
+                      itemBuilder: (context, index) {
+                        final activeTask = activeTasks[index];
+                        return activeTask;
+                      }
+                  );
+                }
             ),
-            TaskCard(
-              id: "SKA-7690",
-              title: "Poster Design",
-              status: "Pending",
-              deadline: "Yesterday, 5:00 PM",
-              isDelayed: true,
-            ),
-            TaskCard(
-              id: "SKA-7804",
-              title: "Material Quality Check",
-              status: "Pending",
-              deadline: "Apr 26, 11:00 AM",
-              isDelayed: false,
-            ),
-
             const SizedBox(height: 10),
             const Text(
               "UPDATED 2 MINS AGO • HIGH CONTRAST MODE ACTIVE",
@@ -63,7 +193,7 @@ class Dashboard extends StatelessWidget {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Text(
-            "Shree Krishna Ads • April 05, 2026",
+            "Shree Krishna Ads • ${DateFormat('MMMM d, y').format(DateTime.now())} ",
             style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 10),
@@ -74,33 +204,33 @@ class Dashboard extends StatelessWidget {
             crossAxisSpacing: 10,
             childAspectRatio: 1.8,
             physics: const NeverScrollableScrollPhysics(),
-            children: const [
+            children: [
               StatusCard(
-                "24",
+                totalTaskCount != null ? totalTaskCount.toString() : '-',
                 "TOTAL TASKS",
                 Colors.teal,
                 icon: Icons.event_note,
               ),
-              StatusCard(
-                "08",
+               StatusCard(
+                 pendingTaskCount != null ? pendingTaskCount.toString() : '-',
                 "PENDING",
                 Colors.blueGrey,
                 icon: CupertinoIcons.clock,
               ),
               StatusCard(
-                "04",
+                inProgressTaskCount != null ? inProgressTaskCount.toString() : '-',
                 "IN PROGRESS",
                 Colors.brown,
                 icon: CupertinoIcons.play,
               ),
               StatusCard(
-                "12",
+                completedTaskCount != null ? completedTaskCount.toString() : '-',
                 "COMPLETED",
                 Colors.green,
                 icon: Icons.check_circle_outline,
               ),
-              StatusCard("02", "DELAYED", Colors.red, icon: Icons.access_time),
-              StatusCard("12", "INCOMPLETE", Colors.orange, icon: Icons.close),
+              StatusCard(delayedTaskCount != null ? delayedTaskCount.toString() : '-', "DELAYED", Colors.red, icon: Icons.access_time),
+              StatusCard(inCompleteTaskCount != null ? inCompleteTaskCount.toString() : '-', "INCOMPLETE", Colors.orange, icon: Icons.close),
             ],
           ),
         ],
@@ -119,7 +249,9 @@ class Dashboard extends StatelessWidget {
           ),
           const Spacer(),
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              widget.switchPage(1);
+            },
             child: const Text("View All", style: TextStyle(color: Colors.teal)),
           ),
         ],
@@ -175,6 +307,7 @@ class StatusCard extends StatelessWidget {
 }
 
 class TaskCard extends StatelessWidget {
+  final String taskId;
   final String id;
   final String title;
   final String status;
@@ -183,6 +316,7 @@ class TaskCard extends StatelessWidget {
 
   const TaskCard({
     super.key,
+    required this.taskId,
     required this.id,
     required this.title,
     required this.status,
@@ -192,19 +326,36 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+    return InkWell(
+        onTap: () {
+          if (status.toUpperCase() != "COMPLETED") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId, myTasksScreenContext: context,)),
+            );
+          }
+          if (status.toUpperCase() == "COMPLETED") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => CompletedTaskDetailsScreen(taskId: taskId,)),
+            );
+          }
+        },
+        child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+         ),
+         child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Chip(
+                Row(
+               children: [
+                  Chip(
                 label: Text("ID: $id"),
                 backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -265,6 +416,8 @@ class TaskCard extends StatelessWidget {
           ),
         ],
       ),
+    )
     );
   }
 }
+

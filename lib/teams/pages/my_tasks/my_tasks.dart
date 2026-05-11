@@ -1,9 +1,22 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../provider/provider.dart';
+import '../../../utils/config.dart';
 import 'completed_detailed_task.dart';
 import 'in_completed_detailed_task.dart';
 
+Future<List<TaskCard>>? completedTasksFuture;
+List<dynamic> completedTasks = [];
+dynamic completedTasksCount;
+List<dynamic> incompleteTasks = [];
+dynamic incompleteTasksCount;
+Future<List<TaskCard>>? incompleteTasksFuture;
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
 
@@ -12,6 +25,181 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+
+
+  Future<List<TaskCard>> fetchCompletedTasks() async{
+    final pref = await SharedPreferences.getInstance();
+    final phone = pref.get('phone');
+    print('entered');
+    final url = Uri.parse('$baseUrl/users/team/completed_tasks/$phone');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    //print(response.statusCode);
+    if(response.statusCode == 200) {
+      List<dynamic> completedTasks = jsonDecode(response.body);
+      setState(() {
+        completedTasksCount = completedTasks.length;
+      });
+      //print(completedTasks);
+      List<TaskCard> completedTaskWidgets = completedTasks.map((task) {
+        return (TaskCard(
+
+          taskId: task['id'],
+          title: task['title'],
+          subtitle: task['description'] ?? 'no description',
+          id: task['project']['project_code'],
+          date: task['status'] == 'COMPLETED' ? DateFormat('MMMM d, y').format(DateTime.parse(task['completed_at'])) : DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
+          status: task['status'],
+          isDelayed: DateTime.parse(task['due_at']).isBefore(DateTime.now()),
+        ));
+      },).toList();
+      return completedTaskWidgets;
+    }
+    else {
+      return [];
+    }
+  }
+
+  Future<List<TaskCard>> fetchInCompleteTasks() async{
+    final pref = await SharedPreferences.getInstance();
+    final phone = pref.get('phone');
+    print('entered');
+    final url = Uri.parse('$baseUrl/users/team/incomplete_tasks/$phone');
+    final response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    if(response.statusCode == 200) {
+      List<dynamic> incompleteTasks = jsonDecode(response.body);
+      setState(() {
+        incompleteTasksCount = incompleteTasks.length;
+      });
+      List<TaskCard> incompleteTaskWidgets = incompleteTasks.map((task) {
+        print(task);
+        return (TaskCard(
+          taskId: task['id'],
+          title: task['title'],
+          subtitle: task['description'] ?? 'no description',
+          id: task['project']['project_code'],
+          date: DateFormat('MMMM d, y').format(DateTime.parse(task['due_at'])),
+          status: task['status'],
+          isDelayed: DateTime.parse(task['due_at']).isBefore(DateTime.now()),
+        ));
+      },).toList();
+      return incompleteTaskWidgets;
+    }
+    else {
+      return [];
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if(mounted){
+      setState(() {
+        completedTasksFuture = fetchCompletedTasks();
+        incompleteTasksFuture = fetchInCompleteTasks();
+      });
+      _connectivitySubscription = Connectivity()
+          .onConnectivityChanged
+          .listen((List<ConnectivityResult> results) {
+        final hasInternet = results.any((r) => r != ConnectivityResult.none);
+        if (hasInternet) {
+          setState(() {
+            completedTasksFuture = fetchInCompleteTasks();
+            incompleteTasksFuture = fetchInCompleteTasks();
+          });
+        }
+      });
+    }
+
+  }
+
+  Widget completed() {
+    return Column(
+      children: [
+        SectionHeaderCompleted(),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            children: [
+              FutureBuilder<List<TaskCard>>(
+                  future: completedTasksFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    // Error
+                    if (snapshot.hasError) {
+                      return Center(child: Text('something went wrong'));
+                    }
+                    completedTasks = snapshot.data!;
+
+                    return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: completedTasks.length,
+                        itemBuilder: (context, index) {
+                          final completedTask = completedTasks[index];
+                          return completedTask;
+                        }
+                    );
+                  }
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget incompleted() {
+    return Column(
+      children: [
+        SectionHeaderInCompleted(),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            children:  [
+              FutureBuilder<List<TaskCard>>(
+                  future: incompleteTasksFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    // Error
+                    if (snapshot.hasError) {
+                      return Center(child: Text('something went wrong'));
+                    }
+                    incompleteTasks = snapshot.data!;
+                    return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: incompleteTasks.length,
+                        itemBuilder: (context, index) {
+                          final incompleteTask = incompleteTasks[index];
+                          return incompleteTask;
+                        }
+                    );
+                  }
+              ),
+
+            ],
+          ),
+        ),
+      ],
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +211,6 @@ class _TasksPageState extends State<TasksPage> {
             const SizedBox(height: 16),
             const ToggleTabs(),
             const SizedBox(height: 16),
-
             Expanded(
               child: Provider.of<TaskProvider>(context).isCompletedSelected
                   ? completed()
@@ -36,93 +223,9 @@ class _TasksPageState extends State<TasksPage> {
   }
 }
 
-Widget completed() {
-  return Column(
-    children: [
-      const SectionHeaderInCompleted(),
-      const SizedBox(height: 12),
-      Expanded(
-        child: ListView(
-          children: const [
-            TaskCard(
-              id: "SKA-2025-0042",
-              title: "Shop Flex Banner Design",
-              subtitle: "Design flex banner for Ravi Stores opening",
-              date: "Apr 24, 2026 • 01:00",
-              status: "Completed",
-            ),
-            TaskCard(
-              id: "SKA-2025-0045",
-              title: "LED Board Layout Design",
-              subtitle: "Create LED layout for showroom front",
-              date: "Apr 02, 2026 • 09:00",
-              status: "Completed",
-              isDelayed: true,
-            ),
-            TaskCard(
-              id: "SKA-2025-0048",
-              title: "Poster Design",
-              subtitle: "Design promotional poster for festival sale",
-              date: "Apr 28, 2026 • 01:30",
-              status: "Completed",
-            ),
-            TaskCard(
-              id: "SKA-2025-0051",
-              title: "Visiting Card Design",
-              subtitle: "Design visiting card for client ABC Traders",
-              date: "Oct 30, 2025 • 10:00",
-              status: "Completed",
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
 
-Widget incompleted() {
-  return Column(
-    children: [
-      const SectionHeaderCompleted(),
-      const SizedBox(height: 12),
-      Expanded(
-        child: ListView(
-          children: const [
-            TaskCard(
-              id: "SKA-2025-0042",
-              title: "Shop Flex Banner Design",
-              subtitle: "Design flex banner for Ravi Stores opening",
-              date: "Apr 24, 2026 • 01:00",
-              status: "In Progress",
-            ),
-            TaskCard(
-              id: "SKA-2025-0045",
-              title: "LED Board Layout Design",
-              subtitle: "Create LED layout for showroom front",
-              date: "Apr 02, 2026 • 09:00",
-              status: "Pending",
-              isDelayed: true,
-            ),
-            TaskCard(
-              id: "SKA-2025-0048",
-              title: "Poster Design",
-              subtitle: "Design promotional poster for festival sale",
-              date: "Apr 28, 2026 • 01:30",
-              status: "Pending",
-            ),
-            TaskCard(
-              id: "SKA-2025-0051",
-              title: "Visiting Card Design",
-              subtitle: "Design visiting card for client ABC Traders",
-              date: "Oct 30, 2025 • 10:00",
-              status: "In Progress",
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
+
+
 
 class ToggleTabs extends StatelessWidget {
   const ToggleTabs({super.key});
@@ -235,9 +338,9 @@ class SectionHeaderInCompleted extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          "INCOMPLETE TASKS (4)",
-          style: TextStyle(
+        Text(
+          "INCOMPLETE TASKS (${incompleteTasksCount ?? '-'})",
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
             color: Colors.grey,
@@ -267,9 +370,9 @@ class SectionHeaderCompleted extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          "INCOMPLETE TASKS (4)",
-          style: TextStyle(
+        Text(
+          "COMPLETED TASKS (${completedTasksCount ?? '-'})",
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
             color: Colors.grey,
@@ -292,6 +395,7 @@ class SectionHeaderCompleted extends StatelessWidget {
 }
 
 class TaskCard extends StatelessWidget {
+  final String taskId;
   final String id;
   final String title;
   final String subtitle;
@@ -301,6 +405,7 @@ class TaskCard extends StatelessWidget {
 
   const TaskCard({
     super.key,
+    required this.taskId,
     required this.id,
     required this.title,
     required this.subtitle,
@@ -316,13 +421,13 @@ class TaskCard extends StatelessWidget {
         if (status.toUpperCase() != "COMPLETED") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => InCompletedTaskDetailsScreen()),
+            MaterialPageRoute(builder: (_) => InCompletedTaskDetailsScreen(taskId: taskId, myTasksScreenContext: context,)),
           );
         }
         if (status.toUpperCase() == "COMPLETED") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => CompletedTaskDetailsScreen()),
+            MaterialPageRoute(builder: (_) => CompletedTaskDetailsScreen( taskId: taskId,)),
           );
         }
       },
@@ -346,7 +451,7 @@ class TaskCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (isDelayed)
+                if (isDelayed && status != 'COMPLETED')
                   Row(
                     children: [
                       Icon(Icons.info_outline, color: Colors.red, size: 15),
@@ -370,7 +475,7 @@ class TaskCard extends StatelessWidget {
             const Divider(height: 20),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                Icon(status == 'COMPLETED' ? Icons.check_circle_outline :Icons.access_time, size: 16, color: Colors.grey),
                 const SizedBox(width: 6),
                 Text(date, style: const TextStyle(color: Colors.grey)),
                 const Spacer(),

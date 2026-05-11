@@ -19,11 +19,11 @@ class _TeamsMainPageState extends State<TeamsMainPage> {
   String role = "";
   String department = "";
 
-  final List<Widget> _pages = [
-    Dashboard(),
-    TasksPage(),
-    const Center(child: Text("Teams")),
-  ];
+  void _onItemTapped(int index) {
+    setState(() => _selectedIndex = index);
+  }
+
+
 
   @override
   void initState() {
@@ -41,12 +41,15 @@ class _TeamsMainPageState extends State<TeamsMainPage> {
     });
   }
 
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-  }
+
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      Dashboard(switchPage: _onItemTapped,),
+      TasksPage(),
+      const Center(child: Text("Teams")),
+    ];
     return Scaffold(
       appBar: CustomAppBar(name: name, role: role, department: department),
 
