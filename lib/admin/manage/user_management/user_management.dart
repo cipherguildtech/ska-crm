@@ -1,91 +1,136 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
 import 'add_user.dart';
 
 class User {
   final String name;
   final String role;
   final String dept;
-  final int tasks;
   final bool active;
 
   User({
     required this.name,
     required this.role,
     required this.dept,
-    required this.tasks,
     required this.active,
   });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      name: json['full_name'] ?? '',
+      role: json['role'] ?? '',
+      dept: json['department'] ?? 'N/A',
+      active: json['is_active'] ?? false,
+    );
+  }
 }
 
-class UserManagementScreen extends StatefulWidget {
-  const UserManagementScreen({super.key});
+class UserManagement extends StatefulWidget {
+  const UserManagement({super.key});
 
   @override
-  State<UserManagementScreen> createState() => _UserManagementScreenState();
+  State<UserManagement> createState() => _UserManagementState();
 }
 
-class _UserManagementScreenState extends State<UserManagementScreen> {
-  List<User> users = [
-    User(
-      name: "Sarah Jenkins",
-      role: "Admin",
-      dept: "Engineering",
-      tasks: 12,
-      active: true,
-    ),
-    User(
-      name: "Marcus Thorne",
-      role: "Sales",
-      dept: "Enterprise",
-      tasks: 5,
-      active: true,
-    ),
-    User(
-      name: "Elena Rodriguez",
-      role: "HR",
-      dept: "People & Ops",
-      tasks: 0,
-      active: false,
-    ),
-  ];
-
+class _UserManagementState extends State<UserManagement> {
+  List<User> users = [];
   List<User> filteredUsers = [];
 
   String searchQuery = "";
   String selectedFilter = "All";
   String sortBy = "Name";
 
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    filteredUsers = users;
+    fetchUsers();
+
+    void showMessage(String message, {bool isError = false}) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message, style: const TextStyle(fontSize: 13)),
+          backgroundColor: isError ? Colors.red : Colors.teal,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          duration: const Duration(seconds: 2),
+          elevation: 6,
+        ),
+      );
+    }
+
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 5));
+
+      if (!mounted) return false;
+
+      fetchUsers(showLoader: false);
+      return true;
+    });
+  }
+
+  Future<void> fetchUsers({bool showLoader = true}) async {
+    try {
+      if (showLoader) {
+        setState(() => isLoading = true);
+      }
+
+      final response = await http.get(
+        Uri.parse(
+          'https://kz2nkt6c-3000.inc1.devtunnels.ms/users/basic_details',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+
+        users = data.map((e) => User.fromJson(e)).toList();
+
+        applyLogic();
+      } else {
+        debugPrint("Failed to load users");
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+
+    if (mounted) {
+      setState(() => isLoading = false);
+    }
   }
 
   void applyLogic() {
     List<User> temp = [...users];
 
-    // 🔍 SEARCH
+    // SEARCH
     if (searchQuery.isNotEmpty) {
       temp = temp.where((user) {
-        return user.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            user.role.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            user.dept.toLowerCase().contains(searchQuery.toLowerCase());
+        return user.name.toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        ) ||
+            user.role.toLowerCase().contains(
+              searchQuery.toLowerCase(),
+            ) ||
+            user.dept.toLowerCase().contains(
+              searchQuery.toLowerCase(),
+            );
       }).toList();
     }
 
-    // 🎯 FILTER
+    // FILTER
     if (selectedFilter == "Active") {
       temp = temp.where((u) => u.active).toList();
     } else if (selectedFilter == "Inactive") {
       temp = temp.where((u) => !u.active).toList();
     }
 
-    // 🔃 SORT
+    // SORT
     if (sortBy == "Name") {
       temp.sort((a, b) => a.name.compareTo(b.name));
-    } else if (sortBy == "Tasks") {
-      temp.sort((a, b) => b.tasks.compareTo(a.tasks));
     }
 
     setState(() {
@@ -104,28 +149,25 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => AddUserScreen()),
-          );
+          ).then((_) {
+            fetchUsers();
+          });
         },
-
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(30),
-        ),
         child: const Icon(Icons.person_add_alt_1, color: Colors.white),
       ),
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           "User Management",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.notifications_none, color: Colors.black),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
           ),
-        ],
+        ),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -136,19 +178,27 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             const SizedBox(height: 16),
             _headerRow(),
             const SizedBox(height: 10),
+
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredUsers.length,
-                itemBuilder: (context, index) {
-                  final user = filteredUsers[index];
-                  return UserCard(
-                    name: user.name,
-                    role: user.role,
-                    dept: user.dept,
-                    tasks: user.tasks,
-                    active: user.active,
-                  );
-                },
+              child: isLoading
+                  ? const Center(
+                child: CircularProgressIndicator(),
+              )
+                  : RefreshIndicator(
+                onRefresh: fetchUsers,
+                child: ListView.builder(
+                  itemCount: filteredUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = filteredUsers[index];
+
+                    return UserCard(
+                      name: user.name,
+                      role: user.role,
+                      dept: user.dept,
+                      active: user.active,
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -157,7 +207,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  // 🔍 SEARCH BAR
   Widget _searchBar() {
     return TextField(
       onChanged: (value) {
@@ -177,7 +226,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  // 🎯 FILTERS
   Widget _filters() {
     return Row(
       children: [
@@ -203,14 +251,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  // 🔃 SORT
   Widget _headerRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           "ALL USERS (${filteredUsers.length})",
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         PopupMenuButton<String>(
           onSelected: (value) {
@@ -218,12 +267,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             applyLogic();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(value: "Name", child: Text("Sort by Name")),
-            PopupMenuItem(value: "Tasks", child: Text("Sort by Tasks")),
+            PopupMenuItem(
+              value: "Name",
+              child: Text("Sort by Name"),
+            ),
           ],
           child: Row(
             children: const [
-              Text("Sort By", style: TextStyle(color: Colors.teal)),
+              Text(
+                "Sort By",
+                style: TextStyle(color: Colors.teal),
+              ),
               Icon(Icons.expand_more, color: Colors.teal),
             ],
           ),
@@ -233,12 +287,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 }
 
-// 🧩 USER CARD
 class UserCard extends StatelessWidget {
   final String name;
   final String role;
   final String dept;
-  final int tasks;
   final bool active;
 
   const UserCard({
@@ -246,7 +298,6 @@ class UserCard extends StatelessWidget {
     required this.name,
     required this.role,
     required this.dept,
-    required this.tasks,
     required this.active,
   });
 
@@ -265,12 +316,18 @@ class UserCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor: const Color(0xffE0F7F7),
-                child: const Icon(Icons.person, color: Colors.teal),
+                child: const Icon(
+                  Icons.person,
+                  color: Colors.teal,
+                ),
               ),
+
               const SizedBox(width: 12),
+
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       name,
@@ -279,48 +336,32 @@ class UserCard extends StatelessWidget {
                         fontSize: 16,
                       ),
                     ),
+
                     Text(
                       active ? "ACTIVE" : "INACTIVE",
                       style: TextStyle(
-                        color: active ? Colors.green : Colors.grey,
+                        color: active
+                            ? Colors.green
+                            : Colors.grey,
                         fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
+
               const Icon(Icons.edit_outlined),
             ],
           ),
+
           const Divider(height: 20),
+
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
             children: [
               _infoItem(Icons.shield, "ROLE", role),
               _infoItem(Icons.apartment, "DEPT.", dept),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.access_time, size: 16),
-                  const SizedBox(width: 6),
-                  Text("$tasks Active Tasks"),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(active ? "Deactivate" : "Activate"),
-                  Switch(
-                    value: active,
-                    onChanged: (_) {},
-                    activeColor: Colors.teal,
-                  ),
-                ],
-              ),
             ],
           ),
         ],
@@ -328,22 +369,39 @@ class UserCard extends StatelessWidget {
     );
   }
 
-  Widget _infoItem(IconData icon, String title, String value) {
+  Widget _infoItem(
+      IconData icon,
+      String title,
+      String value,
+      ) {
     return Row(
       children: [
         CircleAvatar(
           radius: 14,
           backgroundColor: const Color(0xffE8F4F8),
-          child: Icon(icon, size: 16, color: Colors.teal),
+          child: Icon(
+            icon,
+            size: 16,
+            color: Colors.teal,
+          ),
         ),
+
         const SizedBox(width: 8),
+
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 10)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 10),
+            ),
             Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
             ),
           ],
         ),
