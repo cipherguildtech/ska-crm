@@ -18,6 +18,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController descController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   String customerType = "REFERRAL";
   DateTime selectedDate = DateTime.now();
@@ -53,9 +54,16 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
     }
   }
 
+  bool isLoading = false;
+
+
+  Future<bool> createProjet(Map<String,dynamic> customerDetails, Map<String,dynamic> projectDetails) {
+
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return isLoading? CircularProgressIndicator() : Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: IconButton(
@@ -104,7 +112,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
 
             buildTextField(
               "Address",
-              null,
+              addressController,
               hint: "Enter installation site or billing address...",
 
               isRequired: true,
@@ -214,7 +222,27 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-                onPressed: () {},
+                onPressed: () async {
+                  if(_formKey.currentState!.validate()) {
+                    Map<String,dynamic> customerDetails = {
+                      'name': nameController.text,
+                      'phone': phoneController.text,
+                      'email': emailController.text,
+                      'address': addressController.text,
+                      'customer_type': customerType,
+                    };
+                    Map<String, dynamic> projectDetails = {
+                      'service_type': selectedServices,
+                      'description': descController.text,
+                      'deadline': selectedDate,
+                    };
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    bool res = await createProjet(customerDetails, projectDetails);
+                  }
+                },
                 child: const Text(
                   "Create Project",
                   style: TextStyle(
@@ -326,6 +354,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
         ),
         const SizedBox(height: 6),
         TextFormField(
+          key: _formKey,
           controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
@@ -429,11 +458,12 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
+          key: _formKey,
           initialValue: customerType,
           items: [
             "REFERRAL",
             "WALK-IN",
-            "ONLINE",
+            "EXISTING",
           ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
           onChanged: (value) {
             setState(() {
