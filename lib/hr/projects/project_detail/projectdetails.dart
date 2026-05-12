@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:ska_crm/utils/config.dart';
 import '../review_task/review_task.dart';
 import '../task_detail/task_detail.dart';
 import '../assign_task/assign_task.dart';
@@ -51,7 +52,7 @@ class _ProjectDetailsPageState
     try {
       final response = await http.get(
         Uri.parse(
-          "https://kz2nkt6c-3000.inc1.devtunnels.ms/projects/project_details/${widget.projectCode}",
+          "$baseUrl/projects/project_details/${widget.projectCode}",
         ),
       );
 

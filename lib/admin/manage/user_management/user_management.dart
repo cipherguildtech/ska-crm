@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ska_crm/utils/config.dart';
 import 'add_user.dart';
 
 class User {
@@ -8,12 +9,16 @@ class User {
   final String role;
   final String dept;
   final bool active;
+  final String phone;
+  final String email;
 
   User({
     required this.name,
     required this.role,
     required this.dept,
     required this.active,
+    required this.phone,
+    required this.email,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -22,6 +27,8 @@ class User {
       role: json['role'] ?? '',
       dept: json['department'] ?? 'N/A',
       active: json['is_active'] ?? false,
+      phone: json['phone'] ?? '',
+      email: json['email'] ?? '',
     );
   }
 }
@@ -48,20 +55,6 @@ class _UserManagementState extends State<UserManagement> {
     super.initState();
     fetchUsers();
 
-    void showMessage(String message, {bool isError = false}) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message, style: const TextStyle(fontSize: 13)),
-          backgroundColor: isError ? Colors.red : Colors.teal,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          duration: const Duration(seconds: 2),
-          elevation: 6,
-        ),
-      );
-    }
 
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 5));
@@ -81,7 +74,7 @@ class _UserManagementState extends State<UserManagement> {
 
       final response = await http.get(
         Uri.parse(
-          'https://kz2nkt6c-3000.inc1.devtunnels.ms/users/basic_details',
+          '$baseUrl/users/basic_details',
         ),
       );
 
@@ -128,11 +121,6 @@ class _UserManagementState extends State<UserManagement> {
       temp = temp.where((u) => !u.active).toList();
     }
 
-    // SORT
-    if (sortBy == "Name") {
-      temp.sort((a, b) => a.name.compareTo(b.name));
-    }
-
     setState(() {
       filteredUsers = temp;
     });
@@ -157,12 +145,12 @@ class _UserManagementState extends State<UserManagement> {
       ),
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           "User Management",
           style: TextStyle(
-            color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -187,20 +175,23 @@ class _UserManagementState extends State<UserManagement> {
                   : RefreshIndicator(
                 onRefresh: fetchUsers,
                 child: ListView.builder(
-                  itemCount: filteredUsers.length,
-                  itemBuilder: (context, index) {
-                    final user = filteredUsers[index];
+                itemCount: filteredUsers.length,
+                itemBuilder: (context, index) {
+                  final user = filteredUsers[index];
 
-                    return UserCard(
-                      name: user.name,
-                      role: user.role,
-                      dept: user.dept,
-                      active: user.active,
-                    );
+                  return UserCard(
+                    key: ValueKey(user.phone),
+                    name: user.name,
+                    role: user.role,
+                    dept: user.dept,
+                    active: user.active,
+                    phone: user.phone,
+                    email: user.email,
+                  );
                   },
-                ),
               ),
             ),
+                ),
           ],
         ),
       ),
@@ -261,37 +252,18 @@ class _UserManagementState extends State<UserManagement> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        PopupMenuButton<String>(
-          onSelected: (value) {
-            sortBy = value;
-            applyLogic();
-          },
-          itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: "Name",
-              child: Text("Sort by Name"),
-            ),
-          ],
-          child: Row(
-            children: const [
-              Text(
-                "Sort By",
-                style: TextStyle(color: Colors.teal),
-              ),
-              Icon(Icons.expand_more, color: Colors.teal),
-            ],
-          ),
-        ),
       ],
     );
   }
 }
 
-class UserCard extends StatelessWidget {
+class UserCard extends StatefulWidget {
   final String name;
   final String role;
   final String dept;
   final bool active;
+  final String phone;
+  final String email;
 
   const UserCard({
     super.key,
@@ -299,111 +271,301 @@ class UserCard extends StatelessWidget {
     required this.role,
     required this.dept,
     required this.active,
+    required this.phone,
+    required this.email,
   });
 
   @override
+  State<UserCard> createState() => _UserCardState();
+}
+
+class _UserCardState extends State<UserCard> {
+  late bool isActive;
+  bool isUpdating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isActive = widget.active;
+  }
+  void showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontSize: 13)),
+        backgroundColor: isError ? Colors.red : Colors.teal,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: const Duration(seconds: 2),
+        elevation: 6,
+      ),
+    );
+  }
+
+  Future<void> updateUserStatus(bool value) async {
+    try {
+      final response = await http.put(
+        Uri.parse(
+          "$baseUrl/users/user/${widget.phone}/activate_or_deactivate/$value",
+        ),
+      );
+
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
+
+        if (!mounted) return;
+        showMessage( value
+            ? "User Activated"
+            : "User Deactivated");
+      }
+    } catch (e) {
+
+      setState(() {
+        isActive = !value;
+      });
+
+      showMessage("Error: $e");
+
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
+
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
+          /// TOP
           Row(
             children: [
+
               CircleAvatar(
-                backgroundColor: const Color(0xffE0F7F7),
-                child: const Icon(
-                  Icons.person,
-                  color: Colors.teal,
+                radius: 28,
+                backgroundColor: Colors.teal,
+                child: Text(
+                  widget.name.isNotEmpty
+                      ? widget.name[0].toUpperCase()
+                      : "?",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
 
               Expanded(
                 child: Column(
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
                   children: [
+
                     Text(
-                      name,
+                      widget.name,
                       style: const TextStyle(
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
 
-                    Text(
-                      active ? "ACTIVE" : "INACTIVE",
-                      style: TextStyle(
-                        color: active
-                            ? Colors.green
-                            : Colors.grey,
-                        fontSize: 12,
+                    const SizedBox(height: 4),
+
+                    if (widget.dept.trim().isNotEmpty ||
+                        widget.role.trim().isNotEmpty)
+                      Text(
+                        [
+                          if (widget.dept.trim().isNotEmpty &&
+                              widget.dept.toLowerCase() != "n/a")
+                            widget.dept.replaceAll("_", " "),
+
+                          if (widget.role.trim().isNotEmpty)
+                            widget.role,
+                        ].join(" "),
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
 
-              const Icon(Icons.edit_outlined),
+              IconButton(
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddUserScreen(
+                        isEdit: true,
+                        phone: widget.phone,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: Colors.teal,
+                ),
+              ),
             ],
           ),
 
-          const Divider(height: 20),
+          const SizedBox(height: 16),
 
-          Row(
-            mainAxisAlignment:
-            MainAxisAlignment.spaceBetween,
-            children: [
-              _infoItem(Icons.shield, "ROLE", role),
-              _infoItem(Icons.apartment, "DEPT.", dept),
-            ],
+          /// DETAILS BOX
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xffF6F8FA),
+              borderRadius: BorderRadius.circular(14),
+            ),
+
+            child: Column(
+              children: [
+
+                _detailRow(
+                  Icons.email_outlined,
+                  "Email",
+                  widget.email,
+                ),
+
+                const SizedBox(height: 12),
+
+                _detailRow(
+                  Icons.phone_outlined,
+                  "Phone",
+                  widget.phone,
+                ),
+
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+
+                    Icon(
+                      isActive
+                          ? Icons.check_circle
+                          : Icons.cancel,
+                      size: 20,
+                      color: isActive
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Text(
+                      isActive
+                          ? "Active"
+                          : "Inactive",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: isActive
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    isUpdating
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                        : Switch(
+                      value: isActive,
+                      activeThumbColor: Colors.teal,
+                      onChanged: (value) async {
+
+                        setState(() {
+                          isActive = value;
+                          isUpdating = true;
+                        });
+
+                        await updateUserStatus(value);
+
+                        if (mounted) {
+                          setState(() {
+                            isUpdating = false;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _infoItem(
+  Widget _detailRow(
       IconData icon,
       String title,
       String value,
       ) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 14,
-          backgroundColor: const Color(0xffE8F4F8),
-          child: Icon(
-            icon,
-            size: 16,
-            color: Colors.teal,
-          ),
+
+        Icon(
+          icon,
+          size: 20,
+          color: Colors.teal,
         ),
 
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
 
-        Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 10),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+            children: [
+
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 2),
+
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

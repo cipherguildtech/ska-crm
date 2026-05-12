@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:ska_crm/utils/config.dart';
 import 'customers_details.dart';
 
 class Customer {
+  final String id;
   final String name;
   final String phone;
-  final String location;
-  final int projects;
-  final String type; // recent, existing, vip
+  final String email;
+  final String address;
+  final String customerType;
+  final String referal;
 
   Customer({
+    required this.id,
     required this.name,
     required this.phone,
-    required this.location,
-    required this.projects,
-    required this.type,
+    required this.email,
+    required this.address,
+    required this.customerType,
+    required this.referal,
   });
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return Customer(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      phone: json['phone'] ?? '',
+      email: json['email'] ?? '',
+      address: json['address'] ?? '',
+      customerType: json['customer_type'] ?? '',
+      referal: json['referal'] ?? '',
+    );
+  }
 }
 
 class CustomersPage extends StatefulWidget {
@@ -29,36 +47,44 @@ class _CustomersPageState extends State<CustomersPage> {
   String selectedFilter = "All";
   String searchQuery = "";
 
-  final List<Customer> allCustomers = [
-    Customer(
-      name: "Acme Retail Pvt Ltd",
-      phone: "+91 98765 43210",
-      location: "MG Road, Mumbai",
-      projects: 3,
-      type: "existing",
-    ),
-    Customer(
-      name: "BrightMart Stores",
-      phone: "+91 91234 56789",
-      location: "Indiranagar, Bengaluru",
-      projects: 1,
-      type: "recent",
-    ),
-    Customer(
-      name: "Jiva Wellness Center",
-      phone: "+91 99876 54321",
-      location: "",
-      projects: 0,
-      type: "vip",
-    ),
-    Customer(
-      name: "Skyline Architects",
-      phone: "+91 88776 55443",
-      location: "Sector 44, Gurgaon",
-      projects: 5,
-      type: "existing",
-    ),
-  ];
+  List<Customer> allCustomers = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCustomers();
+  }
+
+  Future<void> fetchCustomers() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final response = await http.get(
+        Uri.parse(
+          "$baseUrl/customers",
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+
+        allCustomers = data
+            .map((e) => Customer.fromJson(e))
+            .toList();
+
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error fetching customers: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   List<Customer> get filteredCustomers {
     return allCustomers.where((customer) {
@@ -68,7 +94,8 @@ class _CustomersPageState extends State<CustomersPage> {
 
       final matchesFilter = selectedFilter == "All"
           ? true
-          : customer.type.toLowerCase() == selectedFilter.toLowerCase();
+          : customer.customerType.toLowerCase() ==
+          selectedFilter.toLowerCase();
 
       return matchesSearch && matchesFilter;
     }).toList();
@@ -91,10 +118,11 @@ class _CustomersPageState extends State<CustomersPage> {
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         elevation: 0,
-        leading: const Icon(Icons.arrow_back, color: Colors.black),
-        title: const Text("Customers", style: TextStyle(color: Colors.black)),
+        leading: const Icon(Icons.arrow_back),
+        title: const Text("Customers"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -120,7 +148,7 @@ class _CustomersPageState extends State<CustomersPage> {
             /// 🎯 FILTERS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: ["All", "Recent", "Existing", "VIP"]
+              children: ["All", "WALKIN", "REFERRAL", "EXISTING"]
                   .map(
                     (filter) => GestureDetector(
                       onTap: () => updateFilter(filter),
@@ -137,15 +165,21 @@ class _CustomersPageState extends State<CustomersPage> {
 
             /// LIST
             Expanded(
-              child: filteredCustomers.isEmpty
-                  ? const Center(child: Text("No customers found"))
+              child: isLoading
+                  ? const Center(
+                child: CircularProgressIndicator(),
+              )
+                  : filteredCustomers.isEmpty
+                  ? const Center(
+                child: Text("No customers found"),
+              )
                   : ListView.builder(
-                      itemCount: filteredCustomers.length,
-                      itemBuilder: (_, index) {
-                        final c = filteredCustomers[index];
-                        return CustomerCard(customer: c);
-                      },
-                    ),
+                itemCount: filteredCustomers.length,
+                itemBuilder: (_, index) {
+                  final c = filteredCustomers[index];
+                  return CustomerCard(customer: c);
+                },
+              ),
             ),
           ],
         ),
@@ -183,81 +217,254 @@ class FilterChipWidget extends StatelessWidget {
 class CustomerCard extends StatelessWidget {
   final Customer customer;
 
-  const CustomerCard({super.key, required this.customer});
+  const CustomerCard({
+    super.key,
+    required this.customer,
+  });
+
+  Color getTypeColor() {
+    switch (customer.customerType.toUpperCase()) {
+      case "EXISTING":
+        return Colors.green;
+      case "REFERRAL":
+        return Colors.orange;
+      default:
+        return Colors.teal;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(22),
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => CustomerDetailsPage()),
+          MaterialPageRoute(
+            builder: (_) => CustomerDetailsPage(
+              phoneNumber: customer.phone,
+            ),
+          ),
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// NAME + BADGE
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    customer.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+
+            /// TOP SECTION
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(22),
+                ),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.teal.shade400,
+                    Colors.teal.shade600,
+                  ],
+                ),
+              ),
+              child: Row(
+                children: [
+
+                  /// AVATAR
+                  Container(
+                    height: 58,
+                    width: 58,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Center(
+                      child: Text(
+                        customer.name.isNotEmpty
+                            ? customer.name[0].toUpperCase()
+                            : "?",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.teal,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "${customer.projects} Projects",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
 
-            const SizedBox(height: 8),
+                  const SizedBox(width: 14),
 
-            /// PHONE
-            Row(
-              children: [
-                const Icon(Icons.phone, size: 16, color: Colors.teal),
-                const SizedBox(width: 6),
-                Text(customer.phone),
-              ],
-            ),
+                  /// NAME + PHONE
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          customer.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
 
-            if (customer.location.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                  const SizedBox(width: 6),
-                  Expanded(child: Text(customer.location)),
+                        const SizedBox(height: 6),
+
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.phone,
+                              size: 15,
+                              color: Colors.white70,
+                            ),
+
+                            const SizedBox(width: 5),
+
+                            Expanded(
+                              child: Text(
+                                customer.phone,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  /// TYPE BADGE
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                      BorderRadius.circular(30),
+                    ),
+                    child: Text(
+                      customer.customerType,
+                      style: TextStyle(
+                        color: getTypeColor(),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ],
+            ),
+
+            /// DETAILS
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                children: [
+
+                  /// EMAIL
+                  infoTile(
+                    icon: Icons.email_outlined,
+                    title: "Email",
+                    value: customer.email,
+                    iconColor: Colors.orange,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  /// ADDRESS
+                  infoTile(
+                    icon: Icons.location_on_outlined,
+                    title: "Address",
+                    value: customer.address,
+                    iconColor: Colors.redAccent,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  /// REFERRAL
+                  infoTile(
+                    icon: Icons.groups_2_outlined,
+                    title: "Referral",
+                    value: customer.referal,
+                    iconColor: Colors.teal,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+  Widget infoTile({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color iconColor,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: iconColor,
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+
+              const SizedBox(height: 3),
+
+              Text(
+                value.isEmpty ? "-" : value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
