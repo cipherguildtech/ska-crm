@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ska_crm/admin/service/service.dart';
-
+import '../hr/dashboard/dashboard.dart';
+import '../hr/projects/projects.dart';
+import 'manage/service.dart';
 import '../public/navigation/appbar.dart';
 import '../public/navigation/drawer.dart';
 import '../public/navigation/navbar.dart';
@@ -20,9 +21,9 @@ class _AdminMainPageState extends State<AdminMainPage> {
   String department = "";
 
   final List<Widget> _pages = [
-    const Center(child: Text("Dashboard")),
-    const Center(child: Text("Projects")),
-    ServicesScreen(),
+    const DashboardPage(),
+    const Projects(),
+    const ServicesScreen(),
   ];
 
   @override

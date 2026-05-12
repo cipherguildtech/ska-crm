@@ -3,6 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../utils/config.dart';
+import '../in_progress/task_card.dart';
+import '../in_progress/quotation_card.dart';
+import '../in_progress/task_history.dart';
 
 const Color primary = Color(0xFF1BA39C);
 
@@ -18,6 +21,7 @@ class ReviewTaskPage extends StatefulWidget {
 class _ReviewTaskPageState extends State<ReviewTaskPage> {
   Map? data;
   bool isLoading = true;
+  final TextEditingController _reasonController = TextEditingController();
 
   @override
   void initState() {
@@ -25,10 +29,11 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
     fetchTask();
   }
 
-  String formatDate(String? date) {
-    if (date == null || date.isEmpty) return "-";
-    final d = DateTime.tryParse(date);
-    if (d == null) return date;
+  String formatDate(dynamic date) {
+    if (date == null) return "-";
+
+    final d = DateTime.tryParse(date.toString());
+    if (d == null) return "-";
 
     const months = [
       "Jan","Feb","Mar","Apr","May","Jun",
@@ -41,7 +46,7 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
   Future<void> fetchTask() async {
     try {
       final response = await http.get(
-        Uri.parse("$baseUrl/tasks/single/${widget.taskId}"),
+        Uri.parse("$baseUrl/tasks/task/details/${widget.taskId}"),
       );
 
       if (response.statusCode == 200  || response.statusCode == 201) {
@@ -56,93 +61,6 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
       }
     } catch (e) {
       setState(() => isLoading = false);
-    }
-  }
-
-  void _handleAction(String status) {
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("${status == "accept" ? "Accept" : "Reject"} Task"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Are you sure you want to $status this task?"),
-            const SizedBox(height: 10),
-            TextField(
-              controller: controller,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: "Enter reason...",
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Reason is required")),
-                );
-                return;
-              }
-
-              Navigator.pop(context);
-              submitAction(status, controller.text);
-            },
-            child: const Text("Confirm"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> submitAction(String status, String reason) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final phone = prefs.getString('phone');
-
-      if (phone == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("User not logged in")),
-        );
-        return;
-      }
-
-      final payload = {
-        "task_id": widget.taskId,
-        "action": status,
-        "phone": phone,
-        "reason": reason,
-      };
-
-      final res = await http.post(
-        Uri.parse("$baseUrl/tasks/accept_or_reject"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(payload),
-      );
-
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Task $status successfully")),
-        );
-
-        Navigator.pop(context, true);
-      } else {
-        throw Exception(res.body);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
     }
   }
 
@@ -245,104 +163,6 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
     );
   }
 
-  Widget taskCard(Map task) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          /// TOP
-          Row(
-            children: [
-              Text(
-                "PRJ-${task['id']}",
-                style: const TextStyle(
-                    fontSize: 11, color: Colors.grey),
-              ),
-              const Spacer(),
-              Text(
-                task['status'] ?? "",
-                style: const TextStyle(
-                    fontSize: 11, color: Colors.black54),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-
-          /// TITLE
-          Text(
-            task['department'] ?? "",
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, fontSize: 14),
-          ),
-
-          const SizedBox(height: 6),
-
-          /// DESCRIPTION
-          Text(
-            task['title'] ?? "",
-            style: const TextStyle(color: Colors.black54),
-          ),
-
-          const SizedBox(height: 10),
-
-          /// META ROW
-          Row(
-            children: [
-              const Icon(Icons.flag, size: 14, color: Colors.red),
-              const SizedBox(width: 5),
-              const Text("High", style: TextStyle(fontSize: 12)),
-
-              const SizedBox(width: 15),
-
-              const Icon(Icons.calendar_today, size: 14),
-              const SizedBox(width: 5),
-              Text(formatDate(task['due_at']),
-                  style: const TextStyle(fontSize: 12)),
-
-              const Spacer(),
-
-              const Icon(Icons.attach_file, size: 14),
-              const SizedBox(width: 3),
-              const Text("0"),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          /// USER ROW (dummy like UI)
-          Row(
-            children: [
-              const CircleAvatar(radius: 14, child: Icon(Icons.person, size: 16)),
-              const SizedBox(width: 8),
-
-              const Expanded(
-                child: LinearProgressIndicator(
-                  value: 0.6,
-                  color: primary,
-                  backgroundColor: Colors.grey,
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-
   Widget sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -402,17 +222,210 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
     );
   }
 
+  void _showActionSheet() {
+    _reasonController.clear();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(25),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              /// HANDLE BAR
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              const Text(
+                "Take Action",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              /// REASON INPUT
+              TextField(
+                controller: _reasonController,
+                maxLines: 3,
+                cursorColor: Colors.teal,
+                decoration: InputDecoration(
+                  hintText: "Enter reason...",
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// BUTTONS
+              Row(
+                children: [
+
+                  /// REJECT
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        if (_reasonController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Reason required")),
+                          );
+                          return;
+                        }
+
+                        Navigator.pop(context);
+                        _submitAction("reject");
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("Reject"),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  /// ACCEPT
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_reasonController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Reason required")),
+                          );
+                          return;
+                        }
+
+                        Navigator.pop(context);
+                        _submitAction("accept");
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("Accept",style: TextStyle(color: Colors.white),),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  void _showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontSize: 13)),
+        backgroundColor: isError ? Colors.red : Colors.teal,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: const Duration(seconds: 2),
+        elevation: 6,
+      ),
+    );
+  }
+
+  Future<void> _submitAction(String action) async {
+    final reason = _reasonController.text.trim();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = prefs.getString('phone');
+
+      if (phone == null) {
+        _showMessage("User not logged in");
+        return;
+      }
+
+      final payload = {
+        "task_id": widget.taskId,
+        "action": action,
+        "phone": phone,
+        "reason": reason,
+      };
+
+      final res = await http.post(
+        Uri.parse("$baseUrl/tasks/accept_or_reject"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(payload),
+      );
+      if (!mounted) return;
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        _showMessage("Task $action successfully");
+        Navigator.pop(context, true); // return success
+      } else {
+        throw Exception(res.body);
+      }
+    } catch (e) {
+      _showMessage("Error: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final project = data?['project'] ?? {};
     final task = data ?? {};
+    final history = (data?['taskHistory'] ?? []) as List;
+    final List quotation = List.from(data?['quotations'] ?? []);
+
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("In Progress"),
+        title: const Text("Review Task"),
         backgroundColor: primary,
+        foregroundColor: Colors.white,
       ),
       backgroundColor: const Color(0xFFF5F7FA),
+
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.teal,
+        icon: const Icon(Icons.task_alt),
+        label: const Text("Action"),
+        onPressed: _showActionSheet,
+      ),
 
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -437,50 +450,50 @@ class _ReviewTaskPageState extends State<ReviewTaskPage> {
 
             const SizedBox(height: 20),
 
-            /// TASK HEADER
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text("Task Details",
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-                Text("View All", style: TextStyle(color: primary)),
-              ],
+            const Text(
+              "Task Detail",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
-            /// TASK CARD
-            taskCard(task),
-          ],
-        ),
-      ),
-      bottomNavigationBar: data == null
-          ? null
-          : Container(
-        padding: const EdgeInsets.all(16),
-        color: Colors.white,
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _handleAction("reject"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                ),
-                child: const Text("Reject"),
+            TaskCard(task:task,formatDate:formatDate),
+
+            const SizedBox(height: 20),
+
+            if (quotation.isNotEmpty) ...[
+              const Text(
+                "Quotation",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => _handleAction("accept"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
-                ),
-                child: const Text("Accept"),
+              const SizedBox(height: 10),
+              Column(
+                children: quotation.map((q) {
+                  return QuotationCard(
+                    quotation: q,
+                    formatDate: formatDate,
+                  );
+                }).toList(),
               ),
-            ),
+            ] else ...[
+              const SizedBox(height: 20),
+
+            ],
+            if (history.isNotEmpty) ...[
+              const Text(
+                "Task History",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              TaskHistory(
+                history: history,
+                formatDate: formatDate,
+              ),
+            ] else ...[
+
+              const SizedBox(height: 20),
+
+            ]
           ],
         ),
       ),

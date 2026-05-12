@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ska_crm/admin/service/user_management/user_management.dart';
-
+import 'teams/teams.dart';
+import 'user_management/user_management.dart';
 import 'customers/customers.dart';
 
 class ServicesScreen extends StatelessWidget {
@@ -36,12 +36,17 @@ class ServicesScreen extends StatelessWidget {
                   ServiceItem(
                     icon: Icons.person_add_alt_1,
                     label: "Account",
-                    route: UserManagementScreen(),
+                    route: UserManagement(),
                   ),
                   ServiceItem(
                     icon: Icons.support_agent,
                     label: "Customer",
                     route: CustomersPage(),
+                  ),
+                  ServiceItem(
+                    icon: Icons.people,
+                    label: "Teams",
+                    route: Teams(),
                   ),
                 ],
               ),

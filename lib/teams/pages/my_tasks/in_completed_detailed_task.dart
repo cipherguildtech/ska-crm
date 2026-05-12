@@ -4,19 +4,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:ska_crm/teams/pages/my_tasks/completed_detailed_task.dart';
 import '../../services/taskDetail.dart';
 
 
-String? projectCode;
-String? taskTitle;
-DateTime? deadline;
-String? department;
-String? description;
-String? projectId;
-String? oldStatus;
-String? userPhone;
-bool isDisable = false;
 
 class InCompletedTaskDetailsScreen extends StatefulWidget {
    String taskId;
@@ -32,6 +22,15 @@ class InCompletedTaskDetailsScreen extends StatefulWidget {
 
 
 class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScreen> {
+  String? projectCode;
+  String? taskTitle;
+  DateTime? deadline;
+  String? department;
+  String? description;
+  String? projectId;
+  String? oldStatus;
+  String? userPhone;
+  bool isDisable = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final taskDetailService = TaskDetailService();
   final TextEditingController delayReasonController = TextEditingController();
@@ -398,7 +397,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
       margin: const EdgeInsets.only(top: 8),
       child: TextField(
         controller: controller,
-        enabled: isDisable,
+        enabled: !isDisable,
         maxLines: 4,
         decoration: InputDecoration(
           hintText: hint,
@@ -500,7 +499,12 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
           }
           else {
             if(res == true) {
-              initState();
+              setState(() {
+                currentWorkProgressController.clear();
+                delayReasonController.clear();
+                images = [];
+              });
+              await getTaskDetail();
             }
           }
         },

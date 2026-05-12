@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ska_crm/sales/pages/projects/services/project_services.dart';
 
 class NewCustomerProjectScreen extends StatefulWidget {
   const NewCustomerProjectScreen({super.key});
@@ -18,11 +19,12 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController descController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   String customerType = "REFERRAL";
   DateTime selectedDate = DateTime.now();
 
-  List<String> selectedServices = [];
+  String? selectedService;
 
   final List<String> services = [
     'ADS',
@@ -53,9 +55,17 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
     }
   }
 
+  bool isLoading = false;
+
+
+  Future<bool> createProject(Map<String, dynamic> customerDetails, Map<String, dynamic> projectDetails) async{
+    final projectService = ProjectService();
+    return await projectService.createProject(customerDetails, projectDetails);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return isLoading ? CircularProgressIndicator() : Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: IconButton(
@@ -80,7 +90,9 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +116,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
 
             buildTextField(
               "Address",
-              null,
+              addressController,
               hint: "Enter installation site or billing address...",
 
               isRequired: true,
@@ -133,24 +145,22 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             Wrap(
               spacing: 8,
               children: services.map((service) {
-                final selected = selectedServices.contains(service);
+                final selected = selectedService == service;
                 return ChoiceChip(
                   label: Text(service),
                   labelStyle: TextStyle(
-                    color: selectedServices.contains(service)
+                    color: selected
                         ? Colors.white
                         : Colors.black,
                   ),
-                  checkmarkColor: selectedServices.contains(service)
+                  checkmarkColor: selected
                       ? Colors.white
                       : Colors.black,
                   selected: selected,
                   selectedColor: Colors.teal,
                   onSelected: (_) {
                     setState(() {
-                      selected
-                          ? selectedServices.remove(service)
-                          : selectedServices.add(service);
+                     selectedService = service;
                     });
                   },
                 );
@@ -169,13 +179,6 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             const SizedBox(height: 16),
 
             buildDatePicker(),
-
-            const SizedBox(height: 16),
-
-            const Text("Attachments (Up to 3)"),
-            const SizedBox(height: 8),
-
-            _attachmentsRow(),
 
             const SizedBox(height: 24),
 
@@ -214,7 +217,33 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-                onPressed: () {},
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    Map<String, dynamic> customerDetails = {
+                      'name': nameController.text,
+                      'phone': phoneController.text,
+                      'email': emailController.text,
+                      'address': addressController.text,
+                      'customer_type': customerType,
+                    };
+                    Map<String, dynamic> projectDetails = {
+                      'service_type': selectedService,
+                      'description': descController.text,
+                      'deadline': selectedDate.toIso8601String(),
+                    };
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    bool res = await createProject(customerDetails, projectDetails);
+                    if(res == true) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      Navigator.of(context).pop();
+                    }
+                  }
+                },
                 child: const Text(
                   "Create Project",
                   style: TextStyle(
@@ -227,6 +256,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -237,46 +267,47 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
         Row(
           children: [
             ...images.map(
-              (img) => Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        image: DecorationImage(
-                          image: FileImage(img),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            images.remove(img);
-                          });
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: Colors.white,
+                  (img) =>
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            image: DecorationImage(
+                              image: FileImage(img),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                images.remove(img);
+                              });
+                            },
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
             ),
             _addBox(),
           ],
@@ -307,13 +338,12 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
     );
   }
 
-  Widget buildTextField(
-    String label,
-    TextEditingController? controller, {
-    String? hint,
-    int maxLines = 1,
-    bool isRequired = false,
-  }) {
+  Widget buildTextField(String label,
+      TextEditingController? controller, {
+        String? hint,
+        int maxLines = 1,
+        bool isRequired = false,
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -357,9 +387,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
   }
 
   Widget buildPhoneField() {
-    return Form(
-      key: _formKey,
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -412,8 +440,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
             ],
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget buildDropdown() {
@@ -433,7 +460,7 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
           items: [
             "REFERRAL",
             "WALK-IN",
-            "ONLINE",
+            "EXISTING",
           ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
           onChanged: (value) {
             setState(() {
@@ -488,21 +515,6 @@ class _NewCustomerProjectScreenState extends State<NewCustomerProjectScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget buildAttachmentBox({IconData? icon}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: icon != null
-          ? Icon(icon)
-          : const Icon(Icons.image, color: Colors.grey),
     );
   }
 }
