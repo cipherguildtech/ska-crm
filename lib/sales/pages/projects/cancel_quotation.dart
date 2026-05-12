@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../sales_service.dart';
 
 class RequestCancellationPage extends StatefulWidget {
   final String code;
@@ -10,6 +13,24 @@ class RequestCancellationPage extends StatefulWidget {
 }
 
 class _RequestCancellationPageState extends State<RequestCancellationPage> {
+  final SalesService salesService = SalesService();
+  bool isLoading = true;
+  Map<String, dynamic> project = {};
+  @override
+  void initState() {
+    init();
+
+    super.initState();
+  }
+
+  Future<void> init() async {
+    project = await salesService.fetchProjectByCode(code: widget.code);
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   final TextEditingController reasonController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
 
@@ -21,7 +42,7 @@ class _RequestCancellationPageState extends State<RequestCancellationPage> {
     });
 
     if (!showError) {
-      // Handle submit
+      updateStatus(status: 'CANCELLED', id: project['project_code']);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Request submitted")));
@@ -81,24 +102,24 @@ class _RequestCancellationPageState extends State<RequestCancellationPage> {
                 ),
               ),
               const Spacer(),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  "Full Details",
-                  style: TextStyle(color: Colors.teal.shade700),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: () {},
+              //   child: Text(
+              //     "Full Details",
+              //     style: TextStyle(color: Colors.teal.shade700),
+              //   ),
+              // ),
             ],
           ),
           const Divider(height: 20),
-          infoTile("PROJECT ID", "PRJ-2026-042", Icons.description),
-          infoTile("CUSTOMER NAME", "Acme Retail Pvt Ltd", Icons.person),
+          infoTile("PROJECT ID", project['project_code'], Icons.description),
+          infoTile("CUSTOMER NAME", project['customer']['name'], Icons.person),
           infoTile(
             "SERVICE TYPE",
-            "Social Media Campaign",
+            project['service_type'],
             Icons.card_giftcard,
           ),
-          infoTile("CURRENT STATUS", "Active", Icons.check_circle),
+          infoTile("CURRENT STATUS", project['status'], Icons.check_circle),
         ],
       ),
     );
@@ -136,6 +157,35 @@ class _RequestCancellationPageState extends State<RequestCancellationPage> {
     );
   }
 
+  Future<void> updateStatus({
+    required String id,
+    required String status,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final changedBy = prefs.getString('phone') ?? "0";
+
+    final result = await SalesService.createProjectHistory(
+      projectCode: project['project_code'],
+      projectId: project['id'],
+      taskTitle: project['title'],
+      changedBy: changedBy,
+      taskOldStatus: project['status'],
+      taskNewStatus: status,
+      detail: reasonController.text,
+      note: notesController.text,
+      taskId: project['tasks'][0]['id'],
+    );
+    final res = await salesService.updateProjectStatusById(
+      id: id,
+      status: status,
+    );
+
+    if (res.isNotEmpty && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -159,107 +209,111 @@ class _RequestCancellationPageState extends State<RequestCancellationPage> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildCard(),
-            const SizedBox(height: 20),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildCard(),
+                  const SizedBox(height: 20),
 
-            /// Reason
-            Row(
-              children: const [
-                Text(
-                  "Reason for Cancellation",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                Text(" *", style: TextStyle(color: Colors.red)),
-                Spacer(),
-                Text(
-                  "Required Field",
-                  style: TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            buildTextField(
-              hint: "Enter the reason provided by the customer...",
-              controller: reasonController,
-              isError: showError,
-            ),
-
-            if (showError)
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Text(
-                  "Reason for cancellation is required.",
-                  style: TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              ),
-
-            const SizedBox(height: 20),
-
-            /// Notes
-            const Text(
-              "Additional Notes (Optional)",
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-
-            buildTextField(
-              hint: "Add any internal notes or context (optional).",
-              controller: notesController,
-            ),
-
-            const SizedBox(height: 30),
-
-            /// Submit Button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  /// Reason
+                  Row(
+                    children: const [
+                      Text(
+                        "Reason for Cancellation",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      Text(" *", style: TextStyle(color: Colors.red)),
+                      Spacer(),
+                      Text(
+                        "Required Field",
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
                   ),
-                ),
-                child: const Text(
-                  "Submit Request →",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 8),
+
+                  buildTextField(
+                    hint: "Enter the reason provided by the customer...",
+                    controller: reasonController,
+                    isError: showError,
                   ),
-                ),
+
+                  if (showError)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        "Reason for cancellation is required.",
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  /// Notes
+                  const Text(
+                    "Additional Notes (Optional)",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+
+                  buildTextField(
+                    hint: "Add any internal notes or context (optional).",
+                    controller: notesController,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  /// Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Submit Request →",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.teal,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        fixedSize: Size(MediaQuery.sizeOf(context).width, 40),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "Discard Changes",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.teal,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  fixedSize: Size(MediaQuery.sizeOf(context).width, 40),
-                ),
-                onPressed: () {},
-                child: const Text(
-                  "Discard Changes",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

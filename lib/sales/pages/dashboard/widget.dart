@@ -1,49 +1,5 @@
 import 'package:flutter/material.dart';
 
-class Header extends StatelessWidget {
-  const Header({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const CircleAvatar(radius: 22, child: Icon(Icons.person)),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "Karthik",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text("SALES TEAM", style: TextStyle(color: Colors.teal)),
-          ],
-        ),
-        const Spacer(),
-        Stack(
-          children: [
-            const Icon(Icons.notifications_none, size: 28),
-            Positioned(
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-                child: const Text(
-                  "3",
-                  style: TextStyle(fontSize: 10, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
 class StatCard extends StatelessWidget {
   final String title;
   final String value;

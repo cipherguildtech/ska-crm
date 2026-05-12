@@ -106,7 +106,7 @@ class _CreateQuotationScreenState extends State<CreateQuotationScreen> {
         /// SEND LIST OF PDFs
         pdfs: pdfBase64List,
       );
-
+      print(quotationRes);
       if (quotationRes['success'] != true) {
         throw Exception(
           quotationRes['message'] ?? 'Failed to create quotation',
@@ -117,11 +117,11 @@ class _CreateQuotationScreenState extends State<CreateQuotationScreen> {
 
       /// CREATE PAYMENT
       if (advancePaid > 0) {
-        await salesService.createPayment(
+        final a = await salesService.createPayment(
           projectId: widget.projectId,
           quotationId: quotationId,
           amount: advancePaid,
-          type: 'CASH',
+          type: 'ADVANCE',
           reference: '',
           paidAt: DateTime.now(),
         );
@@ -141,6 +141,7 @@ class _CreateQuotationScreenState extends State<CreateQuotationScreen> {
 
       Navigator.pop(context, true);
     } catch (e) {
+      print(e);
       if (!mounted) return;
 
       ScaffoldMessenger.of(

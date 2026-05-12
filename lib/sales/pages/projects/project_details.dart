@@ -35,9 +35,6 @@ class _ProjectDashboardState extends State<ProjectDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
@@ -66,7 +63,7 @@ class _ProjectDashboardState extends State<ProjectDashboard> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    project['status'],
+                    project['status'] ?? '',
                     style: TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
@@ -79,20 +76,23 @@ class _ProjectDashboardState extends State<ProjectDashboard> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            CustomerInfoCard(project: project),
-            const SizedBox(height: 16),
-            ProjectDetailsCard(project: project),
-            const SizedBox(height: 16),
-            ActionButtons(project: project),
-            const SizedBox(height: 16),
-            ProjectSummary(project: project),
-          ],
-        ),
-      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  CustomerInfoCard(project: project),
+                  const SizedBox(height: 16),
+                  ProjectDetailsCard(project: project),
+                  const SizedBox(height: 16),
+                  if (project['status'] != "CANCELLED")
+                    ActionButtons(project: project),
+                  const SizedBox(height: 16),
+                  ProjectSummary(project: project),
+                ],
+              ),
+            ),
     );
   }
 }
@@ -372,14 +372,14 @@ class ActionButtons extends StatelessWidget {
           "QUOTATION",
           context,
         ),
-        button(
-          Colors.white,
-          Colors.blue,
-          Colors.blue,
-          Icons.sync,
-          "UPDATE PROJECT",
-          context,
-        ),
+        // button(
+        //   Colors.white,
+        //   Colors.blue,
+        //   Colors.blue,
+        //   Icons.sync,
+        //   "UPDATE PROJECT",
+        //   context,
+        // ),
         button(
           Colors.red,
           Colors.white,

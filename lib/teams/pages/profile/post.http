@@ -1,919 +1,154 @@
 @baseUrl = http://localhost:3000
 
-### USERS - one TEAM user for every Users_dept
-
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "bala",
-  "email": "123bala2000@gmail.com",
-  "phone": "+919876543210",
-  "password": "abc123",
-  "role": "SALES"
-}
-
-###
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Shiva uncle",
-  "email": "g.shivanishree@gmail.com",
-  "phone": "+918248566134",
-  "password": "abc123",
-  "role": "HR"
-}
-
-###
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Shiva bro",
-  "email": "g.shivanishree2@gmail.com",
-  "phone": "+918248566133",
-  "password": "abc123",
-  "role": "ADMIN"
-}
-###
-# @name registerDesignUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Balasubramanian M",
-  "email": "123bala2006@gmail.com",
-  "phone": "+916374694399",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "DESIGNING"
-}
-
-###
-# @name registerSiteUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Shiva",
-  "email": "g.shivanishree1@gmail.com",
-  "phone": "+918248566135",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "SITE_VISITING"
-}
-
-###
-# @name registerMarketingUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Rohan Mehta",
-  "email": "rohan.marketing@ska.local",
-  "phone": "+919810000003",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "MARKETING"
-}
-
-###
-# @name registerWeldingUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Kiran Patil",
-  "email": "kiran.welding@ska.local",
-  "phone": "+919810000004",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "WELDING"
-}
-
-###
-# @name registerFittingUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Neha Sharma",
-  "email": "neha.fitting@ska.local",
-  "phone": "+919810000005",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "FITTING"
-}
-
-###
-# @name registerTransportUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Imran Khan",
-  "email": "imran.transport@ska.local",
-  "phone": "+919810000006",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "TRANSPORT"
-}
-
-###
-# @name registerPrintingUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Pooja Rao",
-  "email": "pooja.printing@ska.local",
-  "phone": "+919810000007",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "PRINTING"
-}
-
-###
-# @name registerCncUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Manoj Verma",
-  "email": "manoj.cnc@ska.local",
-  "phone": "+919810000008",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "CNC_CUTTING"
-}
-
-###
-# @name registerLaserUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Sneha Iyer",
-  "email": "sneha.laser@ska.local",
-  "phone": "+919810000009",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "LASER"
-}
-
-###
-# @name registerLetterUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Vikram Singh",
-  "email": "vikram.letters@ska.local",
-  "phone": "+919810000010",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "LETTER_MAKING"
-}
-
-###
-# @name registerErractonUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Farah Ali",
-  "email": "farah.erracton@ska.local",
-  "phone": "+919810000011",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "ERRACTON"
-}
-
-###
-# @name registerOrderUser
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "full_name": "Suresh Kumar",
-  "email": "suresh.order@ska.local",
-  "phone": "+919810000012",
-  "password": "abc123",
-  "role": "TEAM",
-  "department": "ORDER"
-}
-
-### CUSTOMERS - all Customer_type values
-
-POST {{baseUrl}}/customers
-Content-Type: application/json
-
-{
-  "name": "Malabar Gold Showroom",
-  "phone": "+919820000001",
-  "email": "operations@malabargold-kannur.local",
-  "address": "Bank Road, Kannur, Kerala",
-  "customer_type": "WALKIN",
-  "referal": "Front office visit"
-}
-
-###
-POST {{baseUrl}}/customers
-Content-Type: application/json
-
-{
-  "name": "Spice Bay Restaurant",
-  "phone": "+919820000002",
-  "email": "owner@spicebay-kochi.local",
-  "address": "Marine Drive, Kochi, Kerala",
-  "customer_type": "REFERRAL",
-  "referal": "Referred by Malabar Gold"
-}
-
-###
-POST {{baseUrl}}/customers
-Content-Type: application/json
-
-{
-  "name": "BlueNest Apartments",
-  "phone": "+919820000003",
-  "email": "facility@bluenest-calicut.local",
-  "address": "Mavoor Road, Kozhikode, Kerala",
-  "customer_type": "EXISTING",
-  "referal": "Repeat branding customer"
-}
-
-### PROJECTS - create 10 projects first
-
-# @name createProject1
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-001",
-  "customer_email": "operations@malabargold-kannur.local",
-  "service_type": "LED_BOARD",
-  "description": "Premium front elevation LED sign board with gold acrylic letters and warm backlight.",
-  "deadline": "2026-05-03T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject2
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-002",
-  "customer_email": "owner@spicebay-kochi.local",
-  "service_type": "BOARD",
-  "description": "Main restaurant name board, menu standees, and two directional boards for parking.",
-  "deadline": "2026-05-07T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject3
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-003",
-  "customer_email": "facility@bluenest-calicut.local",
-  "service_type": "BRANDING",
-  "description": "Apartment tower entrance branding, basement wayfinding, and reception logo wall.",
-  "deadline": "2026-05-10T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject4
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-004",
-  "customer_email": "operations@malabargold-kannur.local",
-  "service_type": "BANNER",
-  "description": "Akshaya Tritiya campaign flex banners for showroom front and road junctions.",
-  "deadline": "2026-05-12T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject5
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-005",
-  "customer_email": "owner@spicebay-kochi.local",
-  "service_type": "DESIGN",
-  "description": "Brand refresh with menu layout, social media launch creatives, and shop glass graphics.",
-  "deadline": "2026-05-14T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject6
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-006",
-  "customer_email": "facility@bluenest-calicut.local",
-  "service_type": "ADS",
-  "description": "Hoarding artwork and print production for apartment availability campaign.",
-  "deadline": "2026-05-16T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject7
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-007",
-  "customer_email": "operations@malabargold-kannur.local",
-  "service_type": "ROAD_SHOW",
-  "description": "Road show vehicle branding, portable backdrop, flags, and route display panels.",
-  "deadline": "2026-05-20T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject8
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-008",
-  "customer_email": "owner@spicebay-kochi.local",
-  "service_type": "VISITING_CARD",
-  "description": "Premium visiting cards for restaurant partners and delivery tie-up team.",
-  "deadline": "2026-05-22T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject9
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-009",
-  "customer_email": "facility@bluenest-calicut.local",
-  "service_type": "PAMPLET",
-  "description": "Tri-fold project pamphlet with floor highlights, amenities, and location map.",
-  "deadline": "2026-05-25T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-###
-# @name createProject10
-POST {{baseUrl}}/projects
-Content-Type: application/json
-
-{
-  "project_code": "SKA-2026-010",
-  "customer_email": "operations@malabargold-kannur.local",
-  "service_type": "OTHERS",
-  "description": "In-store acrylic product category tags and counter-top offer display units.",
-  "deadline": "2026-05-28T18:00:00.000Z",
-  "created_user_email": "123bala2000@gmail.com"
-}
-
-### PROJECT STATUSES
-### Project IDs are read automatically from the createProject responses.
-
-@p1 = SKA-2026-001
-@p2 = SKA-2026-002
-@p3 = SKA-2026-003
-@p4 = SKA-2026-004
-@p5 = SKA-2026-005
-@p6 = SKA-2026-006
-@p7 = SKA-2026-007
-@p8 = SKA-2026-008
-@p9 = SKA-2026-009
-@p10 = SKA-2026-010
-
-PUT {{baseUrl}}/projects/{{p1}}/status
-Content-Type: application/json
-
-{ "status": "ACTIVE" }
-
-###
-PUT {{baseUrl}}/projects/{{p2}}/status
-Content-Type: application/json
-
-{ "status": "PENDING" }
-
-###
-PUT {{baseUrl}}/projects/{{p3}}/status
-Content-Type: application/json
-
-{ "status": "IN_PROGRESS" }
-
-###
-PUT {{baseUrl}}/projects/{{p4}}/status
-Content-Type: application/json
-
-{ "status": "ON_HOLD" }
-
-###
-PUT {{baseUrl}}/projects/{{p5}}/status
-Content-Type: application/json
-
-{ "status": "COMPLETED" }
-
-###
-PUT {{baseUrl}}/projects/{{p6}}/status
-Content-Type: application/json
-
-{ "status": "CANCELLED" }
-
-###
-PUT {{baseUrl}}/projects/{{p7}}/status
-Content-Type: application/json
-
-{ "status": "IN_PROGRESS" }
-
-###
-PUT {{baseUrl}}/projects/{{p8}}/status
-Content-Type: application/json
-
-{ "status": "ACTIVE" }
-
-###
-PUT {{baseUrl}}/projects/{{p9}}/status
-Content-Type: application/json
-
-{ "status": "PENDING" }
-
-###
-PUT {{baseUrl}}/projects/{{p10}}/status
-Content-Type: application/json
-
-{ "status": "ACTIVE" }
-
-### TASKS - 5 tasks per project, one for each Task_status
-
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-001", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000012", "department": "DESIGNING", "title": "Prepare LED board artwork", "notes": "Create final size artwork with jewellery-safe warm lighting layout.", "status": "PENDING", "files": "[]", "history": "Task created for design queue.", "due_at": "2026-04-27T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-001", "assigned_to_phone": "+918248566135", "assigned_by_phone": "+919810000012", "department": "SITE_VISITING", "title": "Verify showroom frontage measurements", "notes": "Confirm shutter clearance, fixing points, and power point location.", "status": "IN_PROGRESS", "files": "[]", "history": "Site visit scheduled.", "due_at": "2026-04-28T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-001", "assigned_to_phone": "+919810000009", "assigned_by_phone": "+919810000012", "department": "LASER", "title": "Cut acrylic logo letters", "notes": "Use approved gold acrylic sheet and preserve protective film.", "status": "COMPLETED", "files": "[]", "history": "Cutting completed and moved to fitting.", "due_at": "2026-04-29T18:00:00.000Z", "completed_at": "2026-04-29T12:30:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-001", "assigned_to_phone": "+919810000004", "assigned_by_phone": "+919810000012", "department": "WELDING", "title": "Fabricate MS frame", "notes": "Frame cancelled after client approved aluminium profile option.", "status": "CANCELLED", "files": "[]", "history": "Cancelled due to material change.", "due_at": "2026-04-30T18:00:00.000Z" }
-
-###
-# @name createP1ReviewTask
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-001", "assigned_to_phone": "+919810000005", "assigned_by_phone": "+919810000012", "department": "FITTING", "title": "Review LED module spacing", "notes": "Check brightness consistency before final packing.", "status": "REVIEW", "files": "[]", "history": "Sent to order team for quality review.", "due_at": "2026-05-01T18:00:00.000Z" }
-
-### Repeat this status pattern for projects 2-10.
-### Compact batch below keeps every project with PENDING, IN_PROGRESS, COMPLETED, CANCELLED, REVIEW.
-
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-002", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000003", "department": "DESIGNING", "title": "Design restaurant facade board", "notes": "Use spice-red brand palette with legible night view.", "status": "PENDING", "files": "[]", "history": "Awaiting logo source file.", "due_at": "2026-04-29T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-002", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000003", "department": "PRINTING", "title": "Print parking direction boards", "notes": "Foam sheet with outdoor lamination.", "status": "IN_PROGRESS", "files": "[]", "history": "Print started.", "due_at": "2026-04-30T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-002", "assigned_to_phone": "+919810000008", "assigned_by_phone": "+919810000003", "department": "CNC_CUTTING", "title": "Cut menu standee base", "notes": "Use 6 mm ACP base.", "status": "COMPLETED", "files": "[]", "history": "Base cut completed.", "due_at": "2026-05-01T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-002", "assigned_to_phone": "+919810000006", "assigned_by_phone": "+919810000003", "department": "TRANSPORT", "title": "Old material pickup", "notes": "Cancelled because client will dispose old frame.", "status": "CANCELLED", "files": "[]", "history": "Pickup cancelled.", "due_at": "2026-05-02T18:00:00.000Z" }
-
-###
-# @name createP2ReviewTask
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-002", "assigned_to_phone": "+919810000005", "assigned_by_phone": "+919810000003", "department": "FITTING", "title": "Review trial assembly", "notes": "Confirm standee balance and edge finish.", "status": "REVIEW", "files": "[]", "history": "Ready for review.", "due_at": "2026-05-03T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-003", "assigned_to_phone": "+918248566135", "assigned_by_phone": "+919810000012", "department": "SITE_VISITING", "title": "Apartment wayfinding site survey", "notes": "Capture basement levels and reception wall dimensions.", "status": "PENDING", "files": "[]", "history": "Survey pending.", "due_at": "2026-05-01T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-003", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000012", "department": "DESIGNING", "title": "Reception logo wall mockup", "notes": "Create two material options.", "status": "IN_PROGRESS", "files": "[]", "history": "Mockup in progress.", "due_at": "2026-05-02T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-003", "assigned_to_phone": "+919810000010", "assigned_by_phone": "+919810000012", "department": "LETTER_MAKING", "title": "Prepare sample apartment block letters", "notes": "Use brushed silver finish.", "status": "COMPLETED", "files": "[]", "history": "Sample ready.", "due_at": "2026-05-03T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-003", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000012", "department": "PRINTING", "title": "Print old basement sticker set", "notes": "Cancelled after direction map changed.", "status": "CANCELLED", "files": "[]", "history": "Cancelled by revised plan.", "due_at": "2026-05-04T18:00:00.000Z" }
-
-###
-# @name createP3ReviewTask
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-003", "assigned_to_phone": "+919810000011", "assigned_by_phone": "+919810000012", "department": "ERRACTON", "title": "Review installation method", "notes": "Check drilling permission and lift access.", "status": "REVIEW", "files": "[]", "history": "Installation checklist submitted.", "due_at": "2026-05-05T18:00:00.000Z" }
-
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-004", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000003", "department": "DESIGNING", "title": "Campaign banner layout", "notes": "Create festive offer layout for showroom front.", "status": "PENDING", "files": "[]", "history": "Waiting for discount copy.", "due_at": "2026-05-04T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-004", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000003", "department": "PRINTING", "title": "Print junction flex banners", "notes": "Use outdoor flex with reinforced eyelets.", "status": "IN_PROGRESS", "files": "[]", "history": "Printing started.", "due_at": "2026-05-05T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-004", "assigned_to_phone": "+919810000006", "assigned_by_phone": "+919810000003", "department": "TRANSPORT", "title": "Deliver first banner lot", "notes": "Deliver to Kannur showroom security desk.", "status": "COMPLETED", "files": "[]", "history": "Delivered.", "due_at": "2026-05-06T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-004", "assigned_to_phone": "+918248566135", "assigned_by_phone": "+919810000003", "department": "SITE_VISITING", "title": "Survey cancelled junction location", "notes": "Cancelled because permission was denied.", "status": "CANCELLED", "files": "[]", "history": "Location removed.", "due_at": "2026-05-07T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-004", "assigned_to_phone": "+919810000005", "assigned_by_phone": "+919810000003", "department": "FITTING", "title": "Review banner mounting kit", "notes": "Confirm ropes, hooks, and spare eyelets.", "status": "REVIEW", "files": "[]", "history": "Kit prepared for check.", "due_at": "2026-05-08T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-005", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000003", "department": "DESIGNING", "title": "Restaurant brand refresh concepts", "notes": "Prepare two logo lockups and menu cover direction.", "status": "PENDING", "files": "[]", "history": "Creative brief received.", "due_at": "2026-05-06T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-005", "assigned_to_phone": "+919810000003", "assigned_by_phone": "+919810000012", "department": "MARKETING", "title": "Collect launch campaign copy", "notes": "Coordinate offer wording and delivery platform names.", "status": "IN_PROGRESS", "files": "[]", "history": "Copy collection in progress.", "due_at": "2026-05-07T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-005", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000003", "department": "PRINTING", "title": "Print sample menu card", "notes": "Single sample on matte laminated stock.", "status": "COMPLETED", "files": "[]", "history": "Sample printed.", "due_at": "2026-05-08T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-005", "assigned_to_phone": "+919810000008", "assigned_by_phone": "+919810000003", "department": "CNC_CUTTING", "title": "Cut discarded logo option", "notes": "Cancelled after client selected flat vinyl graphics.", "status": "CANCELLED", "files": "[]", "history": "CNC work removed.", "due_at": "2026-05-09T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-005", "assigned_to_phone": "+919810000005", "assigned_by_phone": "+919810000003", "department": "FITTING", "title": "Review glass graphic placement", "notes": "Check visibility from footpath and door swing clearance.", "status": "REVIEW", "files": "[]", "history": "Placement sketch ready.", "due_at": "2026-05-10T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-006", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000003", "department": "DESIGNING", "title": "Apartment hoarding artwork", "notes": "Use amenities hierarchy and location map.", "status": "PENDING", "files": "[]", "history": "Waiting for final floor-plan QR.", "due_at": "2026-05-08T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-006", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000003", "department": "PRINTING", "title": "Print hoarding panel test strip", "notes": "Color proof at production scale.", "status": "IN_PROGRESS", "files": "[]", "history": "Proof in progress.", "due_at": "2026-05-09T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-006", "assigned_to_phone": "+918248566135", "assigned_by_phone": "+919810000003", "department": "SITE_VISITING", "title": "Confirm hoarding frame size", "notes": "Verify actual frame before final print.", "status": "COMPLETED", "files": "[]", "history": "Frame size confirmed.", "due_at": "2026-05-10T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-006", "assigned_to_phone": "+919810000006", "assigned_by_phone": "+919810000003", "department": "TRANSPORT", "title": "Arrange cancelled night delivery", "notes": "Cancelled because project quotation was rejected.", "status": "CANCELLED", "files": "[]", "history": "Delivery cancelled.", "due_at": "2026-05-11T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-006", "assigned_to_phone": "+919810000011", "assigned_by_phone": "+919810000003", "department": "ERRACTON", "title": "Review hoarding erection safety", "notes": "Check scaffold and wind load notes.", "status": "REVIEW", "files": "[]", "history": "Safety checklist sent.", "due_at": "2026-05-12T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-007", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000012", "department": "DESIGNING", "title": "Road show vehicle artwork", "notes": "Prepare wrap layout for left, right, and rear panels.", "status": "PENDING", "files": "[]", "history": "Vehicle dimensions requested.", "due_at": "2026-05-10T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-007", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000012", "department": "PRINTING", "title": "Print portable backdrop", "notes": "Matte finish with carry bag.", "status": "IN_PROGRESS", "files": "[]", "history": "Backdrop print queued.", "due_at": "2026-05-11T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-007", "assigned_to_phone": "+919810000006", "assigned_by_phone": "+919810000012", "department": "TRANSPORT", "title": "Deliver flags and route panels", "notes": "Deliver to showroom event coordinator.", "status": "COMPLETED", "files": "[]", "history": "Materials delivered.", "due_at": "2026-05-12T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-007", "assigned_to_phone": "+919810000004", "assigned_by_phone": "+919810000012", "department": "WELDING", "title": "Cancelled metal flag stand", "notes": "Client opted for rented stands.", "status": "CANCELLED", "files": "[]", "history": "Welding cancelled.", "due_at": "2026-05-13T18:00:00.000Z" }
-
-###
-# @name createP7ReviewTask
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-007", "assigned_to_phone": "+919810000005", "assigned_by_phone": "+919810000012", "department": "FITTING", "title": "Review vehicle sticker installation", "notes": "Check panel alignment and bubble-free finish.", "status": "REVIEW", "files": "[]", "history": "Installation photos uploaded in notes.", "due_at": "2026-05-14T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-008", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000012", "department": "DESIGNING", "title": "Visiting card layout", "notes": "Prepare partner and delivery-team variants.", "status": "PENDING", "files": "[]", "history": "Names list pending.", "due_at": "2026-05-12T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-008", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000012", "department": "PRINTING", "title": "Print visiting card first lot", "notes": "300 gsm matte, spot UV on logo.", "status": "IN_PROGRESS", "files": "[]", "history": "First lot on press.", "due_at": "2026-05-13T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-008", "assigned_to_phone": "+919810000006", "assigned_by_phone": "+919810000012", "department": "TRANSPORT", "title": "Courier sample cards", "notes": "Send sample set to restaurant owner.", "status": "COMPLETED", "files": "[]", "history": "Courier delivered.", "due_at": "2026-05-14T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-008", "assigned_to_phone": "+919810000003", "assigned_by_phone": "+919810000012", "department": "MARKETING", "title": "Cancelled extra profile collection", "notes": "Client reduced card holder list.", "status": "CANCELLED", "files": "[]", "history": "Extra collection cancelled.", "due_at": "2026-05-15T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-008", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000012", "department": "DESIGNING", "title": "Review final card proof", "notes": "Check phone numbers and QR code scan.", "status": "REVIEW", "files": "[]", "history": "Proof ready.", "due_at": "2026-05-16T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-009", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000003", "department": "DESIGNING", "title": "Apartment pamphlet design", "notes": "Tri-fold layout with amenities and map.", "status": "PENDING", "files": "[]", "history": "Waiting for final render images.", "due_at": "2026-05-14T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-009", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000003", "department": "PRINTING", "title": "Print pamphlet proof", "notes": "Gloss art paper proof for approval.", "status": "IN_PROGRESS", "files": "[]", "history": "Proof printing.", "due_at": "2026-05-15T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-009", "assigned_to_phone": "+919810000003", "assigned_by_phone": "+919810000012", "department": "MARKETING", "title": "Verify copy with sales team", "notes": "Confirm amenities list and possession date.", "status": "COMPLETED", "files": "[]", "history": "Copy approved.", "due_at": "2026-05-16T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-009", "assigned_to_phone": "+918248566135", "assigned_by_phone": "+919810000003", "department": "SITE_VISITING", "title": "Cancelled location map resurvey", "notes": "Client provided updated map file.", "status": "CANCELLED", "files": "[]", "history": "Resurvey not needed.", "due_at": "2026-05-17T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-009", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000003", "department": "PRINTING", "title": "Review pamphlet color proof", "notes": "Check skin tones, building render sharpness, and fold marks.", "status": "REVIEW", "files": "[]", "history": "Proof ready for review.", "due_at": "2026-05-18T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-010", "assigned_to_phone": "+916374694399", "assigned_by_phone": "+919810000012", "department": "DESIGNING", "title": "Counter display tag artwork", "notes": "Prepare category tags and offer display graphics.", "status": "PENDING", "files": "[]", "history": "SKU category names pending.", "due_at": "2026-05-16T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-010", "assigned_to_phone": "+919810000009", "assigned_by_phone": "+919810000012", "department": "LASER", "title": "Cut acrylic display tags", "notes": "Use clear acrylic with polished edges.", "status": "IN_PROGRESS", "files": "[]", "history": "Cutting started.", "due_at": "2026-05-17T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-010", "assigned_to_phone": "+919810000007", "assigned_by_phone": "+919810000012", "department": "PRINTING", "title": "Print offer inserts", "notes": "Small format inserts for counter-top units.", "status": "COMPLETED", "files": "[]", "history": "Inserts printed.", "due_at": "2026-05-18T18:00:00.000Z" }
-
-###
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-010", "assigned_to_phone": "+919810000004", "assigned_by_phone": "+919810000012", "department": "WELDING", "title": "Cancelled metal display stand", "notes": "Client selected acrylic-only unit.", "status": "CANCELLED", "files": "[]", "history": "Welding removed from scope.", "due_at": "2026-05-19T18:00:00.000Z" }
-
-###
-# @name createP10ReviewTask
-POST {{baseUrl}}/tasks/create
-Content-Type: application/json
-
-{ "project_code": "SKA-2026-010", "assigned_to_phone": "+919810000005", "assigned_by_phone": "+919810000012", "department": "FITTING", "title": "Review counter unit assembly", "notes": "Check stability and category tag visibility.", "status": "REVIEW", "files": "[]", "history": "Assembly ready for final check.", "due_at": "2026-05-20T18:00:00.000Z" }
-
 ### QUOTATIONS - one quotation per project
 
 # @name createQuotation1
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-001", "amount": 128500, "advance_paid": 50000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-001.pdf" }
+{ "task_id": "0067c413-23b4-46a7-9ad6-ebd9244f80e9", "amount": 128500, "advance_paid": 50000, "approval_status": "APPROVED" }
 
 ###
 # @name createQuotation2
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-002", "amount": 74200, "advance_paid": 25000, "approval_status": "SENT", "pdf_url": "https://files.ska.local/quotations/SKA-2026-002.pdf" }
+{ "project_code": "SKA-2026-000002", "amount": 74200, "advance_paid": 25000, "approval_status": "SENT", "pdf_url": "https://files.ska.local/quotations/SKA-2026-002.pdf" }
 
 ###
 # @name createQuotation3
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-003", "amount": 186000, "advance_paid": 75000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-003.pdf" }
+{ "project_code": "SKA-2026-000003", "amount": 186000, "advance_paid": 75000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-003.pdf" }
 
 ###
 # @name createQuotation4
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-004", "amount": 43500, "advance_paid": 15000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-004.pdf" }
+{ "project_code": "SKA-2026-000004", "amount": 43500, "advance_paid": 15000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-004.pdf" }
 
 ###
 # @name createQuotation5
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-005", "amount": 52000, "advance_paid": 20000, "approval_status": "DRAFT", "pdf_url": "https://files.ska.local/quotations/SKA-2026-005.pdf" }
+{ "project_code": "SKA-2026-000005", "amount": 52000, "advance_paid": 20000, "approval_status": "DRAFT", "pdf_url": "https://files.ska.local/quotations/SKA-2026-005.pdf" }
 
 ###
 # @name createQuotation6
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-006", "amount": 96000, "advance_paid": 0, "approval_status": "REJECTED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-006.pdf" }
+{ "project_code": "SKA-2026-000006", "amount": 96000, "advance_paid": 0, "approval_status": "REJECTED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-006.pdf" }
 
 ###
 # @name createQuotation7
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-007", "amount": 118000, "advance_paid": 35000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-007.pdf" }
+{ "project_code": "SKA-2026-000007", "amount": 118000, "advance_paid": 35000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-007.pdf" }
 
 ###
 # @name createQuotation8
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-008", "amount": 18500, "advance_paid": 9000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-008.pdf" }
+{ "project_code": "SKA-2026-000008", "amount": 18500, "advance_paid": 9000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-008.pdf" }
 
 ###
 # @name createQuotation9
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-009", "amount": 31500, "advance_paid": 12000, "approval_status": "SENT", "pdf_url": "https://files.ska.local/quotations/SKA-2026-009.pdf" }
+{ "project_code": "SKA-2026-000009", "amount": 31500, "advance_paid": 12000, "approval_status": "SENT", "pdf_url": "https://files.ska.local/quotations/SKA-2026-009.pdf" }
 
 ###
 # @name createQuotation10
 POST {{baseUrl}}/quotation/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-010", "amount": 28500, "advance_paid": 10000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-010.pdf" }
+{ "project_code": "SKA-2026-000010", "amount": 28500, "advance_paid": 10000, "approval_status": "APPROVED", "pdf_url": "https://files.ska.local/quotations/SKA-2026-010.pdf" }
 
 ### PAYMENTS - at least one payment for every project, with extra partial/final payments
 
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-001", "amount": 50000, "type": "ADVANCE", "reference": "UPI-MGB-001", "paid_at": "2026-04-24T10:15:00.000Z" }
+{ "project_code": "SKA-2026-000001", "amount": 50000, "type": "ADVANCE", "reference": "UPI-MGB-001", "paid_at": "2026-04-24T10:15:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-001", "amount": 45000, "type": "PARTIAL", "reference": "NEFT-MGB-002", "paid_at": "2026-04-27T14:20:00.000Z" }
+{ "project_code": "SKA-2026-000001", "amount": 45000, "type": "PARTIAL", "reference": "NEFT-MGB-002", "paid_at": "2026-04-27T14:20:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-002", "amount": 25000, "type": "ADVANCE", "reference": "UPI-SPB-001", "paid_at": "2026-04-25T11:00:00.000Z" }
+{ "project_code": "SKA-2026-000002", "amount": 25000, "type": "ADVANCE", "reference": "UPI-SPB-001", "paid_at": "2026-04-25T11:00:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-003", "amount": 75000, "type": "ADVANCE", "reference": "NEFT-BNA-001", "paid_at": "2026-04-25T16:45:00.000Z" }
+{ "project_code": "SKA-2026-000003", "amount": 75000, "type": "ADVANCE", "reference": "NEFT-BNA-001", "paid_at": "2026-04-25T16:45:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-003", "amount": 60000, "type": "PARTIAL", "reference": "CHEQUE-BNA-002", "paid_at": "2026-05-02T12:00:00.000Z" }
+{ "project_code": "SKA-2026-000003", "amount": 60000, "type": "PARTIAL", "reference": "CHEQUE-BNA-002", "paid_at": "2026-05-02T12:00:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-004", "amount": 15000, "type": "ADVANCE", "reference": "CASH-MGB-003", "paid_at": "2026-04-26T09:30:00.000Z" }
+{ "project_code": "SKA-2026-000004", "amount": 15000, "type": "ADVANCE", "reference": "CASH-MGB-003", "paid_at": "2026-04-26T09:30:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-005", "amount": 20000, "type": "ADVANCE", "reference": "UPI-SPB-002", "paid_at": "2026-04-26T17:10:00.000Z" }
+{ "project_code": "SKA-2026-000005", "amount": 20000, "type": "ADVANCE", "reference": "UPI-SPB-002", "paid_at": "2026-04-26T17:10:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-006", "amount": 5000, "type": "ADVANCE", "reference": "REFUNDABLE-HOLD-BNA", "paid_at": "2026-04-27T10:00:00.000Z" }
+{ "project_code": "SKA-2026-000006", "amount": 5000, "type": "ADVANCE", "reference": "REFUNDABLE-HOLD-BNA", "paid_at": "2026-04-27T10:00:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-007", "amount": 35000, "type": "ADVANCE", "reference": "NEFT-MGB-004", "paid_at": "2026-04-28T13:30:00.000Z" }
+{ "project_code": "SKA-2026-000007", "amount": 35000, "type": "ADVANCE", "reference": "NEFT-MGB-004", "paid_at": "2026-04-28T13:30:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-008", "amount": 9000, "type": "ADVANCE", "reference": "UPI-SPB-003", "paid_at": "2026-04-28T15:15:00.000Z" }
+{ "project_code": "SKA-2026-000008", "amount": 9000, "type": "ADVANCE", "reference": "UPI-SPB-003", "paid_at": "2026-04-28T15:15:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-008", "amount": 9500, "type": "FINAL", "reference": "UPI-SPB-004", "paid_at": "2026-05-03T18:45:00.000Z" }
+{ "project_code": "SKA-2026-000008", "amount": 9500, "type": "FINAL", "reference": "UPI-SPB-004", "paid_at": "2026-05-03T18:45:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-009", "amount": 12000, "type": "ADVANCE", "reference": "NEFT-BNA-003", "paid_at": "2026-04-29T12:25:00.000Z" }
+{ "project_code": "SKA-2026-000009", "amount": 12000, "type": "ADVANCE", "reference": "NEFT-BNA-003", "paid_at": "2026-04-29T12:25:00.000Z" }
 
 ###
 POST {{baseUrl}}/payment/create
 Content-Type: application/json
 
-{ "project_code": "SKA-2026-010", "amount": 10000, "type": "ADVANCE", "reference": "CASH-MGB-005", "paid_at": "2026-04-30T11:40:00.000Z" }
+{ "project_code": "SKA-2026-000010", "amount": 10000, "type": "ADVANCE", "reference": "CASH-MGB-005", "paid_at": "2026-04-30T11:40:00.000Z" }
 
 ### PROJECT HISTORY - real rows
 
@@ -922,7 +157,7 @@ Content-Type: application/json
 
 {
   "task_title": "Review LED module spacing",
-  "project_code": "SKA-2026-001",
+  "project_code": "SKA-2026-000001",
   "changed_by": "+919810000012",
   "task_old_status": "IN_PROGRESS",
   "task_new_status": "REVIEW",
@@ -940,7 +175,7 @@ Content-Type: application/json
 
 {
   "task_title": "Review trial assembly",
-  "project_code": "SKA-2026-002",
+  "project_code": "SKA-2026-000002",
   "changed_by": "+919810000003",
   "task_old_status": "IN_PROGRESS",
   "task_new_status": "REVIEW",
@@ -958,7 +193,7 @@ Content-Type: application/json
 
 {
   "task_title": "Review installation method",
-  "project_code": "SKA-2026-003",
+  "project_code": "SKA-2026-000003",
   "changed_by": "+919810000012",
   "task_old_status": "PENDING",
   "task_new_status": "REVIEW",
@@ -976,7 +211,7 @@ Content-Type: application/json
 
 {
   "task_title": "Review vehicle sticker installation",
-  "project_code": "SKA-2026-007",
+  "project_code": "SKA-2026-000007",
   "changed_by": "+919810000012",
   "task_old_status": "IN_PROGRESS",
   "task_new_status": "REVIEW",
@@ -994,7 +229,7 @@ Content-Type: application/json
 
 {
   "task_title": "Review counter unit assembly",
-  "project_code": "SKA-2026-010",
+  "project_code": "SKA-2026-000010",
   "changed_by": "+919810000012",
   "task_old_status": "IN_PROGRESS",
   "task_new_status": "REVIEW",
