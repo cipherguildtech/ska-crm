@@ -60,7 +60,7 @@ void initState() {
 Future<void> fetchUsers() async {
   try {
     final res = await http.get(
-      Uri.parse("https://kz2nkt6c-3000.inc1.devtunnels.ms/users/tasks"),
+      Uri.parse("$baseUrl/users/tasks"),
     );
 
     if (res.statusCode == 200) {

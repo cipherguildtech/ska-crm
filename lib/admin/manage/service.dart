@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'teams/teams.dart';
 import 'user_management/user_management.dart';
 import 'customers/customers.dart';
 
@@ -41,6 +42,11 @@ class ServicesScreen extends StatelessWidget {
                     icon: Icons.support_agent,
                     label: "Customer",
                     route: CustomersPage(),
+                  ),
+                  ServiceItem(
+                    icon: Icons.people,
+                    label: "Teams",
+                    route: Teams(),
                   ),
                 ],
               ),
