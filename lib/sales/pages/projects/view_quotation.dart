@@ -304,35 +304,35 @@ class _ViewQuotationState extends State<ViewQuotation> {
                   const SizedBox(height: 30),
 
                   /// PDF BUTTON
-                  SizedBox(
-                    width: double.infinity,
-
-                    height: 50,
-
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-
-                      onPressed: () {
-                        final pdf = quotations['pdf_url'];
-
-                        debugPrint(pdf);
-                      },
-
-                      child: const Text(
-                        "View PDF",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //
+                  //   height: 50,
+                  //
+                  //   child: ElevatedButton(
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.black,
+                  //
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //       ),
+                  //     ),
+                  //
+                  //     onPressed: () {
+                  //       final pdf = quotations['pdf_url'];
+                  //
+                  //       debugPrint(pdf ?? '');
+                  //     },
+                  //
+                  //     child: const Text(
+                  //       "View PDF",
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontWeight: FontWeight.w600,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

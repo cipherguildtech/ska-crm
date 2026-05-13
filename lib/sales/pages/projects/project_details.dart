@@ -399,7 +399,8 @@ class ProjectSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> tasks = project['tasks'];
+    final List<dynamic> tasks = project['tasks'] ?? [];
+    print(tasks);
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -457,7 +458,13 @@ class ProjectSummary extends StatelessWidget {
                 }
 
                 final task = tasks[index];
-                final due = DateTime.parse(task['due_at'].toString());
+
+                final due = DateTime.parse(
+                  task['due_at'].toString().isNotEmpty &&
+                          task['due_at'].toString() != "null"
+                      ? task['due_at'].toString()
+                      : DateTime.now().toString(),
+                );
                 final now = DateTime.now();
 
                 final today = DateTime(now.year, now.month, now.day);
@@ -469,12 +476,12 @@ class ProjectSummary extends StatelessWidget {
                     Icons.circle,
                     size: 10,
                     color:
-                        quotations.isNotEmpty &&
+                        quotations != null &&
                             quotations[0]['approval_status'] == "SENT"
                         ? Colors.blue
                         : Colors.orange,
                   ),
-                  title: Text(task['title']),
+                  title: Text(task['title'] ?? ""),
                   trailing: Text(
                     dueDate == today
                         ? "Today"

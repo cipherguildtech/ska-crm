@@ -56,11 +56,31 @@ class SalesService {
     return [];
   }
 
-  Future<Map<String, dynamic>> fetchProjectByCode({
+  Future<Map<String, dynamic>> fetchFullProjectByCode({
     required String code,
   }) async {
     try {
       final uri = Uri.parse("$baseUrl/projects/full/$code");
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+
+        return data;
+      }
+    } catch (e) {
+      throw Exception("Failed to load projects: $e");
+    }
+
+    return {};
+  }
+
+  Future<Map<String, dynamic>> fetchProjectByCode({
+    required String code,
+  }) async {
+    try {
+      final uri = Uri.parse("$baseUrl/projects/$code");
 
       final response = await http.get(uri);
 
@@ -176,7 +196,7 @@ class SalesService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/payment'),
+        Uri.parse('$baseUrl/payment/create'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'project_id': projectId,

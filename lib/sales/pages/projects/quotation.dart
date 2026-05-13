@@ -16,6 +16,7 @@ class _QuotationsScreenState extends State<QuotationsScreen> {
   final SalesService salesService = SalesService();
   bool isLoading = true;
   List<dynamic> quotations = [];
+  Map<String, dynamic> project = {};
   @override
   void initState() {
     init();
@@ -24,7 +25,16 @@ class _QuotationsScreenState extends State<QuotationsScreen> {
   }
 
   Future<void> init() async {
-    quotations = await salesService.fetchQuotationsByCode(code: widget.code);
+    final (quotationsResult, projectResult) = await (
+      salesService.fetchQuotationsByCode(code: widget.code),
+      salesService.fetchProjectByCode(code: widget.code),
+    ).wait;
+
+    quotations = quotationsResult;
+
+    project = projectResult;
+    print(quotations);
+    print(project);
 
     setState(() {
       isLoading = false;
@@ -49,36 +59,40 @@ class _QuotationsScreenState extends State<QuotationsScreen> {
           style: const TextStyle(color: Colors.black, fontSize: 16),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.teal,
-                shadowColor: Colors.teal,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CreateQuotationScreen(
-                      taskId: quotations[0]['task_id'],
-                      projectId: quotations[0]['task']['project_id'],
+          project['tasks'].toString() == '[]'
+              ? SizedBox()
+              : Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.teal,
+                      shadowColor: Colors.teal,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CreateQuotationScreen(
+                            taskId: project['tasks'][0]['id'],
+                            projectId: project['id'],
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add, size: 20),
+                    label: const Text(
+                      "Create",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.add, size: 20),
-              label: const Text(
-                "Create",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
+                ),
         ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
+          : project['tasks'].toString() == '[]'
+          ? Center(child: Text("No Tasks Found"))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [

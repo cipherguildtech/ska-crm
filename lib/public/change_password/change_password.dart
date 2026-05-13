@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../services/change_password.dart';
 import 'widgets/form.dart';
 import 'widgets/header.dart';
@@ -42,9 +43,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         content: Text(message),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

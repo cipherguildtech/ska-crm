@@ -101,7 +101,11 @@ class _RecentCustomersState extends State<RecentCustomers> {
                           const SizedBox(height: 20),
 
                           _infoRow(Icons.phone, "Phone", customer['phone']),
-                          _infoRow(Icons.email, "Email", customer['email']),
+                          _infoRow(
+                            Icons.email,
+                            "Email",
+                            customer['email'] ?? "",
+                          ),
                           _infoRow(
                             Icons.location_on,
                             "Address",
@@ -110,7 +114,7 @@ class _RecentCustomersState extends State<RecentCustomers> {
                           _infoRow(
                             Icons.people,
                             "Referral",
-                            customer['referal'],
+                            customer['referal'] ?? '',
                           ),
                         ],
                       ),
