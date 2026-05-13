@@ -31,6 +31,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
   String? oldStatus;
   String? userPhone;
   bool isDisable = false;
+  bool isLoading = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final taskDetailService = TaskDetailService();
   final TextEditingController delayReasonController = TextEditingController();
@@ -141,7 +142,9 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
       );
     }
 
-    return Scaffold(
+    return isLoading ? Center(
+      child: CircularProgressIndicator(),
+    ) : Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         elevation: 0,
@@ -491,6 +494,9 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: isDisable ? null :() async {
+          setState(() {
+            isLoading = true;
+          });
           final bool? res = await progressTask(widget.taskId);
           if(res == null) {
             Center(
@@ -503,6 +509,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
                 currentWorkProgressController.clear();
                 delayReasonController.clear();
                 images = [];
+                isLoading = false;
               });
               await getTaskDetail();
             }
@@ -533,6 +540,9 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: isDisable ? null : () async{
+          setState(() {
+            isLoading = true;
+          });
           final bool? res = await completeTask(widget.taskId);
           if(res == null) {
             Center(
@@ -543,6 +553,7 @@ class _InCompletedTaskDetailsScreenState extends State<InCompletedTaskDetailsScr
             if(res == true) {
               setState(() {
                 isDisable = true;
+                isLoading = false;
               });
             }
           }
