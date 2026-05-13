@@ -66,10 +66,6 @@ class _ViewQuotationState extends State<ViewQuotation> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     final task = quotations['task'] as Map<String, dynamic>? ?? {};
 
     final payments = quotations['payments'] as List<dynamic>? ?? [];
@@ -100,220 +96,246 @@ class _ViewQuotationState extends State<ViewQuotation> {
         ),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-            /// TASK DETAILS
-            _card(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-                  const Text(
-                    "Task Details",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  /// TASK DETAILS
+                  _card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        const Text(
+                          "Task Details",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        Text(
+                          task['title'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          task['notes'] ?? '',
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        _infoRow("Department", task['department'] ?? '-'),
+
+                        const SizedBox(height: 12),
+
+                        _infoRow("Status", task['status'] ?? '-'),
+
+                        const SizedBox(height: 12),
+
+                        _infoRow("Due Date", formatDate(task['due_at'])),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  Text(
-                    task['title'] ?? '',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                  /// QUOTATION SUMMARY
+                  _card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        const Text(
+                          "Quotation Summary",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        _priceRow(
+                          "Quotation Amount",
+                          "₹${quotations['amount']}",
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        _priceRow(
+                          "Advance Paid",
+                          "₹${quotations['advance_paid']}",
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        const Divider(),
+
+                        const SizedBox(height: 10),
+
+                        _priceRow(
+                          "Balance Amount",
+                          "₹${calculateBalance()}",
+                          isBold: true,
+                        ),
+                      ],
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    task['notes'] ?? '',
-                    style: TextStyle(color: Colors.grey.shade700),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  _infoRow("Department", task['department'] ?? '-'),
-
-                  const SizedBox(height: 12),
-
-                  _infoRow("Status", task['status'] ?? '-'),
-
-                  const SizedBox(height: 12),
-
-                  _infoRow("Due Date", formatDate(task['due_at'])),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// QUOTATION SUMMARY
-            _card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  const Text(
-                    "Quotation Summary",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  _priceRow("Quotation Amount", "₹${quotations['amount']}"),
-
-                  const SizedBox(height: 12),
-
-                  _priceRow("Advance Paid", "₹${quotations['advance_paid']}"),
-
-                  const SizedBox(height: 20),
-
-                  const Divider(),
-
-                  const SizedBox(height: 10),
-
-                  _priceRow(
-                    "Balance Amount",
-                    "₹${calculateBalance()}",
-                    isBold: true,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// APPROVAL STATUS
-            _card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  const Text(
-                    "Approval Status",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 16),
 
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
+                  /// APPROVAL STATUS
+                  _card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
-                    decoration: BoxDecoration(
-                      color: statusColor(status).withOpacity(0.12),
+                      children: [
+                        const Text(
+                          "Approval Status",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
 
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                        const SizedBox(height: 16),
 
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        color: statusColor(status),
-                        fontWeight: FontWeight.bold,
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: statusColor(status).withOpacity(0.12),
+
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+
+                          child: Text(
+                            status,
+                            style: TextStyle(
+                              color: statusColor(status),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-            /// PAYMENTS
-            if (payments.isNotEmpty)
-              _card(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  /// PAYMENTS
+                  if (payments.isNotEmpty)
+                    _card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
 
-                  children: [
-                    const Text(
-                      "Payments",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        children: [
+                          const Text(
+                            "Payments",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          ...payments.map((payment) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+
+                              padding: const EdgeInsets.all(14),
+
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+
+                              child: Column(
+                                children: [
+                                  _infoRow(
+                                    "Reference",
+                                    payment['reference'] ?? '-',
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  _infoRow("Type", payment['type'] ?? '-'),
+
+                                  const SizedBox(height: 10),
+
+                                  _infoRow(
+                                    "Paid Amount",
+                                    "₹${payment['amount']}",
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  _infoRow(
+                                    "Paid At",
+                                    formatDate(payment['paid_at']),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
-                    ...payments.map((payment) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 14),
+                  /// PDF BUTTON
+                  SizedBox(
+                    width: double.infinity,
 
-                        padding: const EdgeInsets.all(14),
+                    height: 50,
 
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
 
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                      ),
 
-                        child: Column(
-                          children: [
-                            _infoRow("Reference", payment['reference'] ?? '-'),
+                      onPressed: () {
+                        final pdf = quotations['pdf_url'];
 
-                            const SizedBox(height: 10),
+                        debugPrint(pdf);
+                      },
 
-                            _infoRow("Type", payment['type'] ?? '-'),
-
-                            const SizedBox(height: 10),
-
-                            _infoRow("Paid Amount", "₹${payment['amount']}"),
-
-                            const SizedBox(height: 10),
-
-                            _infoRow("Paid At", formatDate(payment['paid_at'])),
-                          ],
+                      child: const Text(
+                        "View PDF",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
                         ),
-                      );
-                    }).toList(),
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 30),
-
-            /// PDF BUTTON
-            SizedBox(
-              width: double.infinity,
-
-              height: 50,
-
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                ),
-
-                onPressed: () {
-                  final pdf = quotations['pdf_url'];
-
-                  debugPrint(pdf);
-                },
-
-                child: const Text(
-                  "View PDF",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

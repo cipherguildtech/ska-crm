@@ -31,9 +31,6 @@ class _ActiveProjectsState extends State<ActiveProjects> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -48,49 +45,55 @@ class _ActiveProjectsState extends State<ActiveProjects> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: projects.length,
-        itemBuilder: (context, index) {
-          final project = projects[index];
-          final date = DateTime.parse(project['deadline'].toString());
-          final deadline =
-              '${DateFormat('MMMM').format(date)} ${date.day}, ${date.year}';
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: projects.length,
+              itemBuilder: (context, index) {
+                final project = projects[index];
+                final date = DateTime.parse(project['deadline'].toString());
+                final deadline =
+                    '${DateFormat('MMMM').format(date)} ${date.day}, ${date.year}';
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-
-                    _infoRow(
-                      Icons.code,
-                      "Project Code",
-                      project['project_code'],
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    _infoRow(Icons.timelapse, "Status", project['status']),
-                    _infoRow(
-                      Icons.description,
-                      "Description",
-                      project['description'],
-                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 20),
 
-                    _infoRow(Icons.access_time, "Deadline", deadline),
-                  ],
-                ),
-              ),
+                          _infoRow(
+                            Icons.code,
+                            "Project Code",
+                            project['project_code'],
+                          ),
+                          _infoRow(
+                            Icons.timelapse,
+                            "Status",
+                            project['status'],
+                          ),
+                          _infoRow(
+                            Icons.description,
+                            "Description",
+                            project['description'],
+                          ),
+
+                          _infoRow(Icons.access_time, "Deadline", deadline),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 

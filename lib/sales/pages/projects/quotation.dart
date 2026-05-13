@@ -33,10 +33,6 @@ class _QuotationsScreenState extends State<QuotationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xfff5f7f9),
       appBar: AppBar(
@@ -81,35 +77,39 @@ class _QuotationsScreenState extends State<QuotationsScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const InfoBanner(),
-          const SizedBox(height: 12),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: quotations.length,
-            itemBuilder: (context, index) {
-              final quotation = quotations[index];
-              final date = DateTime.parse(quotation['created_at'].toString());
-              final createdDate =
-                  '${DateFormat('MMMM').format(date)} ${date.day}, ${date.year}';
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const InfoBanner(),
+                const SizedBox(height: 12),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: quotations.length,
+                  itemBuilder: (context, index) {
+                    final quotation = quotations[index];
+                    final date = DateTime.parse(
+                      quotation['created_at'].toString(),
+                    );
+                    final createdDate =
+                        '${DateFormat('MMMM').format(date)} ${date.day}, ${date.year}';
 
-              return QuoteCard(
-                id: quotation['id'],
-                title: quotation['task']['title'],
-                date: createdDate,
-                amount: "₹ ${quotation['amount']}",
-                status: Status.values.firstWhere(
-                  (e) => e.name == quotation['approval_status'],
+                    return QuoteCard(
+                      id: quotation['id'],
+                      title: quotation['task']['title'],
+                      date: createdDate,
+                      amount: "₹ ${quotation['amount']}",
+                      status: Status.values.firstWhere(
+                        (e) => e.name == quotation['approval_status'],
+                      ),
+                      onStatusUpdated: init,
+                    );
+                  },
                 ),
-                onStatusUpdated: init,
-              );
-            },
-          ),
-        ],
-      ),
+              ],
+            ),
     );
   }
 }
@@ -347,6 +347,7 @@ class _QuoteCardState extends State<QuoteCard> {
       case Status.SENT:
         return [
           _outlineButton("View", widget.id, context),
+          _primaryButton("Approve"),
           _dangerButton("Reject"),
         ];
 
@@ -358,6 +359,7 @@ class _QuoteCardState extends State<QuoteCard> {
           _outlineButton("View", widget.id, context),
           // _outlineButton("Edit", id, context),
           _primaryButton("Send"),
+          _primaryButton("Approve"),
           _dangerButton("Reject"),
         ];
     }
@@ -412,19 +414,33 @@ class _QuoteCardState extends State<QuoteCard> {
             borderRadius: BorderRadiusGeometry.circular(10),
           ),
         ),
-        side: WidgetStateProperty.all(BorderSide(color: Colors.blue)),
+        side: WidgetStateProperty.all(
+          BorderSide(color: text == 'Approve' ? Colors.green : Colors.blue),
+        ),
       ),
       onPressed: () {
         if (text == 'Send') {
           updateStatus(id: widget.id, status: 'SENT');
         }
+        if (text == 'Approve') {
+          updateStatus(id: widget.id, status: 'APPROVED');
+        }
       },
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.send, color: Colors.blue, size: 15),
+          Icon(
+            Icons.send,
+            color: text == 'Approve' ? Colors.green : Colors.blue,
+            size: 15,
+          ),
           SizedBox(width: 5),
-          Text(text, style: TextStyle(color: Colors.blue)),
+          Text(
+            text,
+            style: TextStyle(
+              color: text == 'Approve' ? Colors.green : Colors.blue,
+            ),
+          ),
         ],
       ),
     );
